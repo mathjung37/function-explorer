@@ -20,7 +20,7 @@
   header h1 { margin: 0; font-size: 24px; }
   header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
   nav { display: flex; gap: 6px; }
-  nav button { border: 1px solid var(--line); background: #fff; padding: 10px 16px; border-radius: 12px 12px 0 0; font-size: 18px; font-family: inherit; cursor: pointer; color: var(--muted); border-bottom: none; }
+  nav button { border: 1px solid var(--line); background: #fff; padding: 10px 13px; border-radius: 12px 12px 0 0; font-size: 17px; font-family: inherit; cursor: pointer; color: var(--muted); border-bottom: none; }
   nav button.on { background: var(--x); color: #fff; border-color: var(--x); font-weight: 700; }
 
   /* ---- 레이아웃: 왼쪽 설정 / 오른쪽 그림 ---- */
@@ -111,6 +111,16 @@
   .xslider span { min-width: 260px; font-weight: 700; }
   .bigset { font-size: 22px; font-weight: 700; }
 
+  /* ---- ③ 함수의 그래프 ---- */
+  .seg { display: flex; gap: 6px; margin-bottom: 14px; }
+  .seg button { flex: 1; padding: 10px 6px; border: 2px solid var(--line); background: #fff; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; color: var(--muted); }
+  .seg button.on { background: var(--x); color: #fff; border-color: var(--x); }
+  .info.c3 { grid-template-columns: 1.1fr 1.5fr 1.5fr; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; filter: none; }
+  .lat { cursor: pointer; }
+  .lat:hover { fill: #3b6fd8; fill-opacity: .3; }
+  .pairset { font-size: 19px; font-weight: 700; color: #6b3fd8; word-break: keep-all; }
+
   .arrow { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw .6s ease forwards; }
   .arrowHead { opacity: 0; animation: fade .2s ease forwards; }
   @keyframes draw { to { stroke-dashoffset: 0; } }
@@ -137,9 +147,10 @@
   <nav>
     <button data-tab="t1" class="on">① 정의역 · 공역 · 치역</button>
     <button data-tab="t5">② 정의역이 실수일 때</button>
-    <button data-tab="t2">③ 합성함수</button>
-    <button data-tab="t3">④ 역함수</button>
-    <button data-tab="t4">⑤ 직접 대응시키기</button>
+    <button data-tab="t6">③ 함수의 그래프</button>
+    <button data-tab="t2">④ 합성함수</button>
+    <button data-tab="t3">⑤ 역함수</button>
+    <button data-tab="t4">⑥ 직접 대응시키기</button>
   </nav>
 </header>
 
@@ -193,15 +204,13 @@
       </div>
       <div class="svgbox"><svg id="svg1" viewBox="0 0 760 480"></svg></div>
     </div>
-    <div class="card info c4">
+    <div class="card info c2">
       <div class="box">
         <div class="k">정의역 X</div><div class="v" id="dX"></div>
         <div class="k" id="dYk">공역 Y</div><div class="v" id="dY"></div>
         <div class="k">치역 f(X)</div><div class="v" id="dR" style="color:var(--range)"></div>
       </div>
       <div class="box"><div class="k">대응표</div><table id="tbl"></table></div>
-      <div class="box"><div class="k">함수의 종류</div><div id="dType"></div></div>
-      <div class="box note" id="dCount"></div>
     </div>
   </div>
 </section>
@@ -361,6 +370,55 @@
   </div>
 </section>
 
+<!-- ================= ③ 함수의 그래프 ================= -->
+<section class="tab" id="t6">
+  <div class="left card">
+    <div class="seg">
+      <button id="gModeA" class="on">❶ 순서쌍으로<br>그래프 그리기</button>
+      <button id="gModeB">❷ 함수의<br>그래프일까?</button>
+    </div>
+    <div id="gLeftA">
+      <h2>문제</h2>
+      <div class="note" style="margin-top:0" id="gAprob"></div>
+      <button class="btn primary" id="gAnew">새 문제</button>
+      <button class="btn ghost" id="gAreset">처음부터 다시</button>
+      <button class="btn secondary" id="gAext" disabled>정의역을 실수로 넓히기 ▶</button>
+      <div class="progress" id="gAprog"></div>
+      <div class="note">
+        <b>함수의 그래프</b><br>
+        정의역의 원소 x와 함숫값 f(x)의 순서쌍 (x, f(x)) 전체의 집합<br>
+        <b>{ (x, f(x)) | x ∈ X }</b><br><br>
+        x ∈ X마다 f(x)를 계산하여 좌표평면의 <u>격자점을 클릭</u>하세요.
+      </div>
+    </div>
+    <div id="gLeftB" style="display:none">
+      <h2>판별하기</h2>
+      <div class="progress" id="gBprog" style="margin:0 0 6px"></div>
+      <button class="btn secondary" id="gByes">함수의 그래프이다</button>
+      <button class="btn" id="gBno" style="background:var(--bad);color:#fff">함수의 그래프가 아니다</button>
+      <button class="btn primary" id="gBnext">다음 그래프 ▶</button>
+      <div class="note">
+        <b>판별 방법</b><br>
+        아래 슬라이더로 세로선 <b>x = a</b>를 움직여 보세요.<br>
+        정의역의 각 원소 a에 대하여 직선 x = a와 그래프가 <u>오직 한 점</u>에서 만나면 함수의 그래프입니다.
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage">
+      <div class="formula" id="gTitle"></div>
+      <div class="svgbox"><svg id="svg6" viewBox="0 0 760 470"></svg></div>
+      <div class="xslider" id="gSlider" style="display:none">세로선 x = a <input type="range" id="gAx" min="-4" max="4" step="0.1" value="-3"> <span id="gAxv"></span></div>
+    </div>
+    <div class="card info c3">
+      <div class="box" id="gI1"></div>
+      <div class="box" id="gI2"></div>
+      <div class="box note" id="gI3"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ================= ④ 직접 대응시키기 ================= -->
 <section class="tab" id="t4">
   <div class="left card">
@@ -503,6 +561,7 @@ document.querySelectorAll("nav button").forEach(b => b.addEventListener("click",
   if (b.dataset.tab === "t3") renderInv(true);
   if (b.dataset.tab === "t4") render4();
   if (b.dataset.tab === "t5") render5();
+  if (b.dataset.tab === "t6") renderG();
 }));
 
 // ===================================================================
@@ -577,36 +636,18 @@ function render1() {
   renderInfo1(inR);
 }
 
-function comb(n, k) { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); }
-function fact(n) { return n <= 1 ? 1 : n * fact(n - 1); }
-function stirling2(n, k) { let s = 0; for (let j = 0; j <= k; j++) s += (j % 2 ? -1 : 1) * comb(k, j) * Math.pow(k - j, n); return Math.round(s / fact(k)); }
-
 function renderInfo1(R) {
   const nX = X.length, nY = Y.length, r = R.length;
   $("dX").textContent = setStr(X);
   $("dYk").textContent = idMode ? "공역 (= X)" : "공역 Y";
   $("dY").textContent = setStr(Y);
   $("dR").textContent = setStr(R);
-  $("tbl").innerHTML = table([["x", ...X], ["f(x)", ...X.map(x => f[x])]]);
-  const oneToOne = r === nX, onto = r === nY;
-  const isId = idMode;
-  const tags = [
-    ["일대일함수", oneToOne], ["일대일대응", oneToOne && onto], ["상수함수", r === 1],
-    ["항등함수", isId], ["치역 = 공역", onto],
-  ];
-  $("dType").innerHTML = tags.map(([t, on]) => `<span class="tag ${on ? "on" : ""}">${on ? "✔ " : ""}${t}</span>`).join("");
-
-  if (isId) {
-    $("dCount").innerHTML = `<b>항등함수</b> I : X → X<br>X의 각 원소 x에 자기 자신 x를 대응시키는 함수<br><b>I(x) = x</b>  → 일대일대응입니다.`;
-  } else if (r === 1) {
-    $("dCount").innerHTML = `<b>상수함수</b><br>X의 모든 원소가 Y의 <u>한 원소 ${R[0]}</u>에만 대응합니다.<br><b>f(x) = ${R[0]}</b>  → 치역의 원소는 1개입니다.`;
-  } else {
-    const total = Math.pow(nY, nX), exact = comb(nY, r) * stirling2(nX, r) * fact(r);
-    $("dCount").innerHTML =
-      `X → Y 함수: 모두 <b>${nY}<sup>${nX}</sup> = ${total.toLocaleString()}</b>개<br>` +
-      `그중 치역의 원소가 <b>${r}개</b>인 함수: <b>${exact.toLocaleString()}</b>개<br>` +
-      `<span style="font-size:13px">‘함수 재설정’은 이 중 하나를 다시 고릅니다.</span>`;
-  }
+  // 상수함수·항등함수 버튼을 눌렀을 때만 짧은 설명
+  const memo = idMode ? `<b>항등함수</b> f(x) = x : X의 각 원소에 자기 자신이 대응`
+    : r === 1 ? `<b>상수함수</b> f(x) = ${R[0]} : 모든 원소가 한 원소 ${R[0]}에 대응`
+    : "";
+  $("tbl").innerHTML = table([["x", ...X], ["f(x)", ...X.map(x => f[x])]]) +
+    (memo ? `<tr><td colspan="${X.length + 1}" style="text-align:left;font-size:15px;background:#f3faf6">${memo}</td></tr>` : "");
   $("counter").textContent = resetCount ? `함수 재설정 ${resetCount}회` : "";
 }
 
@@ -1349,7 +1390,282 @@ $("rShow").addEventListener("click", () => { rRevealed = true; render5(); });
 $("rX").addEventListener("input", () => { clearInterval(rAnim); rSweepVis = null; rXcur = +$("rX").value; render5(); });
 
 // ===================================================================
-syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew();
+// ③ 함수의 그래프 (교과서 110쪽)
+// ===================================================================
+// 좌표평면 그리기: box = {x0,x1,y0,y1} (좌표), px = {L,R,T,B} (픽셀)
+function drawPlane(svg, box, px) {
+  const sx = x => px.L + (x - box.x0) / (box.x1 - box.x0) * (px.R - px.L);
+  const sy = y => px.B - (y - box.y0) / (box.y1 - box.y0) * (px.B - px.T);
+  const ax = sx(Math.min(Math.max(0, box.x0), box.x1)), ay = sy(Math.min(Math.max(0, box.y0), box.y1));
+  const defs = svg.querySelector("defs");
+  const cp = el("clipPath", { id: svg.id + "-clip" }, defs);
+  el("rect", { x: px.L, y: px.T, width: px.R - px.L, height: px.B - px.T }, cp);
+  const stx = niceStep(box.x1 - box.x0), sty = niceStep(box.y1 - box.y0);
+  for (let x = Math.ceil(box.x0); x <= box.x1; x++) {
+    el("line", { x1: sx(x), y1: px.T, x2: sx(x), y2: px.B, stroke: "#e6e9ef" }, svg);
+    if (x !== 0 && x % stx === 0) text(nfmt(x), sx(x), ay + 15, { "font-size": 14, fill: "#777" }, svg);
+  }
+  for (let y = Math.ceil(box.y0); y <= box.y1; y++) {
+    el("line", { x1: px.L, y1: sy(y), x2: px.R, y2: sy(y), stroke: "#e6e9ef" }, svg);
+    if (y !== 0 && y % sty === 0) text(nfmt(y), ax - 10, sy(y), { "font-size": 14, fill: "#777", "text-anchor": "end" }, svg);
+  }
+  el("line", { x1: px.L, y1: ay, x2: px.R + 8, y2: ay, stroke: "#555", "stroke-width": 1.6, "marker-end": markerFor(svg, "#555") }, svg);
+  el("line", { x1: ax, y1: px.B, x2: ax, y2: px.T - 8, stroke: "#555", "stroke-width": 1.6, "marker-end": markerFor(svg, "#555") }, svg);
+  text("x", px.R + 20, ay, { "font-size": 19, "font-style": "italic", "font-family": "serif" }, svg);
+  text("y", ax, px.T - 18, { "font-size": 19, "font-style": "italic", "font-family": "serif" }, svg);
+  text("O", ax - 11, ay + 14, { "font-size": 14, fill: "#555", "font-style": "italic" }, svg);
+  return { sx, sy, ax, ay, clip: `url(#${svg.id}-clip)` };
+}
+
+let gMode = "A";
+
+// ---------- ❶ 순서쌍으로 그래프 그리기 ----------
+const G_PRESETS = [
+  { a: 0, b: 1, c: -1, X: [1, 2, 3] },     // 개념 확인: f(x) = x − 1, 정의역 {1, 2, 3}
+  { a: 1, b: 0, c: -1, X: [0, 1, 2] },     // 문제 4: f(x) = x² − 1, 정의역 {0, 1, 2}
+];
+let gP = null, gPi = 0, gFound = {}, gMist = 0, gWrong = null, gWrongT = null, gExt = -1, gExtT = null;
+const G_STEPS = [0.5, 0.25, 0.1, 0.05];   // 점을 촘촘하게: 간격
+
+function gNewProblem() {
+  let p;
+  if (gPi < G_PRESETS.length) p = G_PRESETS[gPi];
+  else {
+    for (;;) {
+      const quad = rand(2) === 1;
+      const a = quad ? (rand(2) ? 1 : -1) : 0, b = quad ? 0 : sample([-2, -1, 1, 2], 1)[0], c = rand(5) - 2;
+      const X = sortEl(sample(intRange(-2, 3), 3));
+      const F = x => a * x * x + b * x + c;
+      if (X.every(x => F(x) >= -4 && F(x) <= 7)) { p = { a, b, c, X }; break; }
+    }
+  }
+  gPi++;
+  gP = { ...p, F: x => p.a * x * x + p.b * x + p.c };
+  gReset();
+}
+function gReset() {
+  gFound = {}; gMist = 0; gWrong = null; gExt = -1;
+  clearTimeout(gWrongT); clearInterval(gExtT);
+  gFeed(`정의역의 원소 x마다 f(x)를 계산해서<br>점 <b>(x, f(x))</b>를 좌표평면에서 클릭하세요.`);
+  renderG();
+}
+const gDone = () => gP.X.every(x => gFound[x] !== undefined);
+const gSub = x => `f(${x}) = ` + polyTerms(gP.a, gP.b, gP.c, x < 0 ? `(${x})` : `${x}`, "×");
+const gMin = () => Math.min(...gP.X);
+function gFeed(html) { $("gI3").innerHTML = html; }
+
+function gBoxA() {
+  const xs = gP.X, xmin = Math.min(...xs), xmax = Math.max(...xs);
+  const x0 = Math.min(-1, xmin - 1), x1 = xmax + 1.5;
+  const ys = [0, ...xs.map(gP.F)];
+  for (let i = 0; i <= 40; i++) ys.push(gP.F(xmin + (x1 - xmin) * i / 40));
+  return { x0, x1, y0: Math.min(...ys) - 1, y1: Math.max(...ys) + 1 };
+}
+
+function gPick(x, y) {
+  if (gExt >= 0) return;
+  if (!gP.X.includes(x)) {
+    gFeed(`<b class="ng">x = ${x}는 정의역의 원소가 아니에요.</b><br>정의역 X = ${setStr(gP.X)} 의 원소에 대해서만 점을 찍습니다.`);
+    return;
+  }
+  if (gFound[x] !== undefined) { gFeed(`x = ${x}의 점 (${x}, ${gFound[x]})은 이미 찾았어요.<br>x 하나에 점은 <b>오직 하나</b>입니다.`); return; }
+  if (gP.F(x) === y) {
+    gFound[x] = y;
+    let h = `<span class="ok" style="font-size:20px;font-weight:700">✔ 정답!</span><br>${gSub(x)} = ${y} → 점 <b>(${x}, ${y})</b>`;
+    if (gDone()) {
+      h += `<br><br><b>모든 점을 찍었어요!</b> 정의역의 원소가 ${gP.X.length}개이므로 그래프도 점 ${gP.X.length}개입니다.<br>‘정의역을 실수로 넓히기’를 눌러 보세요.`;
+    }
+    gFeed(h);
+  } else {
+    gMist++;
+    gWrong = { x, y };
+    gFeed(`<span class="ng" style="font-size:20px;font-weight:700">✘ (${x}, ${y})가 아니에요.</span><br>${gSub(x)} = ? 를 다시 계산해 보세요.`);
+    clearTimeout(gWrongT);
+    gWrongT = setTimeout(() => { gWrong = null; renderG(); }, 1300);
+  }
+  renderG();
+}
+
+function gExtend() {
+  if (!gDone()) return;
+  clearInterval(gExtT);
+  gExt = 0; renderG();
+  gExtT = setInterval(() => {
+    gExt++;
+    if (gExt >= G_STEPS.length) clearInterval(gExtT);
+    renderG();
+  }, 900);
+}
+
+function renderGA() {
+  const svg = $("svg6"); clearSvg(svg);
+  const box = gBoxA();
+  const P = drawPlane(svg, box, { L: 70, R: 710, T: 30, B: 440 });
+  const { sx, sy } = P;
+  const fs = fmtPoly(gP.a, gP.b, gP.c), xmin = gMin();
+  const extDom = `{ x | x ≥ ${xmin} }`;
+  $("gTitle").innerHTML = `f(x) = ${fs}<small>정의역 ${gExt >= 0 ? extDom : setStr(gP.X)}</small>`;
+  $("gAprob").innerHTML = `함수 <b>f(x) = ${fs}</b>의<br>정의역이 <b>${setStr(gP.X)}</b>일 때,<br>함수 f의 그래프를 그리시오.`;
+
+  // 정의역 원소 표시 (x축 위 파란 점)
+  if (gExt < 0) gP.X.forEach(x => {
+    el("line", { x1: sx(x), y1: P.ay, x2: sx(x), y2: 30, stroke: "#3b6fd8", "stroke-dasharray": "3 5", opacity: 0.35 }, svg);
+    el("circle", { cx: sx(x), cy: P.ay, r: 5, fill: "#3b6fd8" }, svg);
+  });
+
+  // 정의역을 넓히는 과정
+  if (gExt >= 0) {
+    const x1 = box.x1;
+    if (gExt < G_STEPS.length) {
+      const h = G_STEPS[gExt];
+      let n = 0;
+      for (let x = xmin; x <= x1 + 1e-9; x += h) {
+        el("circle", { cx: sx(x), cy: sy(gP.F(x)), r: Math.max(2.2, 5 - gExt), fill: "#9b4fd8", "clip-path": P.clip }, svg); n++;
+      }
+      text(`점 사이 간격 ${h} → 점 ${n}개 이상`, 390, 455, { "font-size": 16, fill: "#9b4fd8", "font-weight": 700 }, svg);
+    } else {
+      const pts = [];
+      for (let i = 0; i <= 200; i++) { const x = xmin + (x1 - xmin) * i / 200; pts.push(`${sx(x)},${sy(gP.F(x))}`); }
+      el("polyline", { points: pts.join(" "), fill: "none", stroke: "#9b4fd8", "stroke-width": 4, "clip-path": P.clip }, svg);
+      text(`점이 무수히 많아져서 끊어지지 않는 ${gP.a ? "곡선" : "직선"}이 됩니다`, 390, 455, { "font-size": 16, fill: "#9b4fd8", "font-weight": 700 }, svg);
+    }
+  }
+
+  // 클릭 가능한 격자점
+  if (gExt < 0 && !gDone()) {
+    for (let x = Math.ceil(box.x0); x <= box.x1; x++)
+      for (let y = Math.ceil(box.y0); y <= box.y1; y++) {
+        const c = el("circle", { cx: sx(x), cy: sy(y), r: 10, fill: "#fff", "fill-opacity": 0, class: "lat" }, svg);
+        c.addEventListener("click", () => gPick(x, y));
+      }
+  }
+  // 틀린 시도
+  if (gWrong) {
+    const X = sx(gWrong.x), Y = sy(gWrong.y);
+    el("line", { x1: X - 9, y1: Y - 9, x2: X + 9, y2: Y + 9, stroke: BAD, "stroke-width": 4 }, svg);
+    el("line", { x1: X - 9, y1: Y + 9, x2: X + 9, y2: Y - 9, stroke: BAD, "stroke-width": 4 }, svg);
+  }
+  // 찾은 점
+  gP.X.forEach((x, i) => {
+    if (gFound[x] === undefined) return;
+    const X = sx(x), Y = sy(gFound[x]);
+    el("circle", { cx: X, cy: Y, r: 8, fill: COLORS[i % 7], stroke: "#fff", "stroke-width": 2 }, svg);
+    const t = text(`(${x}, ${gFound[x]})`, X + 12, Y - 14, { "font-size": 16, "font-weight": 700, fill: COLORS[i % 7], "text-anchor": "start" }, svg);
+    t.setAttribute("paint-order", "stroke"); t.setAttribute("stroke", "#fff"); t.setAttribute("stroke-width", 4);
+  });
+
+  // 정보 띠
+  const cnt = gP.X.filter(x => gFound[x] !== undefined).length;
+  $("gAprog").innerHTML = `찾은 점 <b>${cnt} / ${gP.X.length}</b>  ·  틀린 횟수 <b class="${gMist ? "ng" : ""}">${gMist}</b>`;
+  $("gAext").disabled = !gDone() || gExt >= 0;
+  $("gI1").innerHTML = `<div class="k">대응표</div>` + table([["x", ...gP.X], ["f(x)", ...gP.X.map(x => gFound[x] ?? "?")]]);
+  const pairs = gP.X.map(x => gFound[x] !== undefined ? `(${x}, ${gFound[x]})` : `(${x}, ?)`).join(", ");
+  $("gI2").innerHTML = gExt >= 0
+    ? `<div class="k">정의역이 ${extDom}일 때 함수 f의 그래프</div><div class="pairset">{ (x, f(x)) | x ≥ ${xmin} }</div><div style="margin-top:6px;font-size:15px;color:var(--muted)">정의역의 원소가 무수히 많으므로 순서쌍도 무수히 많습니다.</div>`
+    : `<div class="k">함수 f의 그래프 = { (x, f(x)) | x ∈ X }</div><div class="pairset">{ ${pairs} }</div>`;
+  if (gExt >= G_STEPS.length) gFeed(`정의역이 {x | x ≥ ${xmin}}처럼 <b>실수</b>이면 그래프는 좌표평면 위의 <b>${gP.a ? "곡선" : "직선"}</b>으로 나타납니다.<br>(점 (${xmin}, ${gP.F(xmin)})에서 시작)`);
+}
+
+// ---------- ❷ 함수의 그래프일까? (세로선 판정) ----------
+const sq = Math.sqrt;
+const G_ITEMS = [
+  { name: "x² + y² = 4  (원)", isF: false, witness: 0, param: t => [2 * Math.cos(t), 2 * Math.sin(t)], t: [0, 2 * Math.PI],
+    ys: a => Math.abs(a) < 2 - 1e-9 ? [sq(4 - a * a), -sq(4 - a * a)] : Math.abs(Math.abs(a) - 2) < 1e-9 ? [0] : [],
+    why: "x = 0일 때 두 점 (0, 2), (0, −2)에서 만나요.<br>→ x = 0에 y가 <b>2개</b> 대응하므로 함수가 아닙니다." },
+  { name: "y = |x|", isF: true, fx: Math.abs, why: "모든 실수 a에 대하여 직선 x = a와 <b>오직 한 점</b> (a, |a|)에서 만나요." },
+  { name: "점으로 이루어진 그래프 ①", isF: false, witness: 2, pts: [[1, 1], [2, 1], [2, 3], [3, 2]],
+    why: "x = 2일 때 두 점 (2, 1), (2, 3)에서 만나요.<br>→ x = 2에 y가 <b>2개</b> 대응하므로 함수가 아닙니다." },
+  { name: "y = x² − 2", isF: true, fx: x => x * x - 2, why: "모든 실수 a에 대하여 직선 x = a와 <b>오직 한 점</b> (a, a² − 2)에서 만나요." },
+  { name: "x = y²", isF: false, witness: 1, param: t => [t * t, t], t: [-2.1, 2.1],
+    ys: a => a > 1e-9 ? [sq(a), -sq(a)] : Math.abs(a) < 1e-9 ? [0] : [],
+    why: "x = 1일 때 두 점 (1, 1), (1, −1)에서 만나요.<br>→ x = 1에 y가 <b>2개</b> 대응하므로 함수가 아닙니다." },
+  { name: "y = 2  (상수함수)", isF: true, fx: () => 2, why: "모든 실수 a에 대하여 <b>오직 한 점</b> (a, 2)에서 만나요. 상수함수의 그래프입니다." },
+  { name: "점으로 이루어진 그래프 ②", isF: true, pts: [[-2, 1], [0, 3], [1, -1], [3, 2]],
+    why: "정의역 {−2, 0, 1, 3}의 각 원소 a마다 직선 x = a와 <b>오직 한 점</b>에서 만나요." },
+  { name: "x = 1  (세로 직선)", isF: false, witness: 1, param: t => [1, t], t: [-4.5, 4.5], ys: a => Math.abs(a - 1) < 1e-9 ? "inf" : [],
+    why: "x = 1일 때 직선 전체와 겹쳐 <b>무수히 많은 점</b>에서 만나요.<br>→ x = 1에 y가 무수히 많이 대응하므로 함수가 아닙니다." },
+  { name: "y = ¼x³ − x", isF: true, fx: x => x ** 3 / 4 - x, why: "모든 실수 a에 대하여 직선 x = a와 <b>오직 한 점</b>에서 만나요. 구불구불해도 함수의 그래프입니다." },
+];
+let gOrder = [], gBi = 0, gAx = -3, gAns = null, gScore = { right: 0, done: 0 };
+
+function gItem() { return G_ITEMS[gOrder[gBi]]; }
+function gYs(it, a) {
+  if (it.ys) return it.ys(a);
+  if (it.fx) return [it.fx(a)];
+  return it.pts.filter(p => Math.abs(p[0] - a) < 0.05).map(p => p[1]);
+}
+function gStartB() { gOrder = shuffle(G_ITEMS.map((_, i) => i)); gBi = 0; gScore = { right: 0, done: 0 }; gNextB(true); }
+function gNextB(first) {
+  if (!first) gBi = (gBi + 1) % gOrder.length;
+  gAns = null; gAx = -3; $("gAx").value = gAx;
+  gFeed(`세로선 x = a를 움직여 그래프와 몇 개의 점에서 만나는지 살펴본 뒤, 왼쪽에서 답을 고르세요.`);
+  renderG();
+}
+function gAnswer(yes) {
+  if (gAns) return;
+  const it = gItem(), ok = yes === it.isF;
+  gAns = { ok }; gScore.done++; if (ok) gScore.right++;
+  if (!it.isF) { gAx = it.witness; $("gAx").value = gAx; }
+  gFeed(`<span class="${ok ? "ok" : "ng"}" style="font-size:20px;font-weight:700">${ok ? "✔ 정답!" : "✘ 아쉬워요."}</span> ` +
+    `이 그래프는 함수의 그래프${it.isF ? "<b>입니다</b>" : "가 <b>아닙니다</b>"}.<br>${it.why}`);
+  renderG();
+}
+
+function renderGB() {
+  const svg = $("svg6"); clearSvg(svg);
+  const it = gItem();
+  const P = drawPlane(svg, { x0: -4, x1: 4, y0: -4, y1: 4 }, { L: 165, R: 595, T: 30, B: 460 });
+  const { sx, sy } = P;
+  $("gTitle").innerHTML = `${it.name}<small>그래프 ${gBi + 1} / ${gOrder.length}</small>`;
+
+  // 그래프
+  const ink = "#1f2430";
+  if (it.pts) it.pts.forEach(p => el("circle", { cx: sx(p[0]), cy: sy(p[1]), r: 7, fill: ink }, svg));
+  else {
+    const pts = [];
+    if (it.fx) for (let i = 0; i <= 400; i++) { const x = -4.5 + 9 * i / 400; pts.push(`${sx(x)},${sy(it.fx(x))}`); }
+    else for (let i = 0; i <= 400; i++) { const [x, y] = it.param(it.t[0] + (it.t[1] - it.t[0]) * i / 400); pts.push(`${sx(x)},${sy(y)}`); }
+    el("polyline", { points: pts.join(" "), fill: "none", stroke: ink, "stroke-width": 3.5, "clip-path": P.clip }, svg);
+  }
+
+  // 세로선 x = a 와 교점
+  const a = gAx, ys = gYs(it, a), X = sx(a);
+  const inf = ys === "inf";
+  el("line", { x1: X, y1: 30, x2: X, y2: 460, stroke: inf ? BAD : "#2f9e6e", "stroke-width": inf ? 6 : 3, opacity: inf ? 0.6 : 0.85 }, svg);
+  text(`x = ${nfmt(a)}`, X, 18, { "font-size": 16, fill: "#2f9e6e", "font-weight": 700 }, svg);
+  if (!inf) ys.forEach(y => el("circle", { cx: X, cy: sy(y), r: 9, fill: ys.length > 1 ? BAD : "#2f9e6e", stroke: "#fff", "stroke-width": 2.5 }, svg));
+
+  const n = inf ? "무수히 많음" : `${ys.length}개`;
+  const detail = inf ? "" : ys.length ? " (" + ys.map(y => `y = ${nfmt(Math.round(y * 100) / 100)}`).join(", ") + ")" : "";
+  $("gAxv").innerHTML = ys.length === 0 && !inf
+    ? `만나는 점 없음 <span style="color:var(--muted);font-weight:500">(x = ${nfmt(a)}은 정의역 밖)</span>`
+    : `만나는 점 <span style="color:${inf || ys.length > 1 ? BAD : "#2f9e6e"}">${n}</span>${detail}`;
+  $("gI1").innerHTML = `<div class="k">직선 x = ${nfmt(a)}과 만나는 점</div><div class="bigset" style="color:${inf || ys.length > 1 ? BAD : "#2f9e6e"}">${n}</div>`;
+  $("gI2").innerHTML = `<div class="k">판정 기준</div>정의역의 각 원소 a에 대하여 직선 x = a와 <b>오직 한 점</b>에서 만나야 함수의 그래프<br><span style="font-size:14px;color:var(--muted)">(2개 이상인 a가 하나라도 있으면 함수가 아님)</span>`;
+  $("gBprog").innerHTML = `맞힌 개수 <b>${gScore.right} / ${gScore.done}</b>`;
+  $("gByes").disabled = $("gBno").disabled = !!gAns;
+}
+
+function renderG() {
+  $("gLeftA").style.display = gMode === "A" ? "" : "none";
+  $("gLeftB").style.display = gMode === "B" ? "" : "none";
+  $("gSlider").style.display = gMode === "B" ? "" : "none";
+  $("gModeA").classList.toggle("on", gMode === "A");
+  $("gModeB").classList.toggle("on", gMode === "B");
+  gMode === "A" ? renderGA() : renderGB();
+}
+$("gModeA").addEventListener("click", () => { gMode = "A"; gFeed(`정의역의 원소 x마다 f(x)를 계산해서<br>점 <b>(x, f(x))</b>를 좌표평면에서 클릭하세요.`); renderG(); });
+$("gModeB").addEventListener("click", () => { gMode = "B"; if (!gOrder.length) gStartB(); else { gFeed(""); renderG(); } });
+$("gAnew").addEventListener("click", gNewProblem);
+$("gAreset").addEventListener("click", gReset);
+$("gAext").addEventListener("click", gExtend);
+$("gByes").addEventListener("click", () => gAnswer(true));
+$("gBno").addEventListener("click", () => gAnswer(false));
+$("gBnext").addEventListener("click", () => gNextB(false));
+$("gAx").addEventListener("input", () => { gAx = Math.round(+$("gAx").value * 10) / 10; renderG(); });
+
+// ===================================================================
+syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew(); gNewProblem();
 </script>
 </body>
 </html>
