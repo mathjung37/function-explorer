@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>함수 탐구 · 공통수학2</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #fff; --ink: #1f2430; --muted: #6b7280;
+    --x: #3b6fd8; --y: #d8763b; --z: #8a4fd8; --range: #2f9e6e; --bad: #d63b3b; --line: #d9dde6;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    background: var(--bg); color: var(--ink); font-size: 17px;
+    display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+  }
+  header { padding: 12px 22px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex: none; }
+  header h1 { margin: 0; font-size: 24px; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  nav { display: flex; gap: 6px; }
+  nav button { border: 1px solid var(--line); background: #fff; padding: 10px 16px; border-radius: 12px 12px 0 0; font-size: 18px; font-family: inherit; cursor: pointer; color: var(--muted); border-bottom: none; }
+  nav button.on { background: var(--x); color: #fff; border-color: var(--x); font-weight: 700; }
+
+  /* ---- 레이아웃: 왼쪽 설정 / 오른쪽 그림 ---- */
+  .tab { display: none; }
+  .tab.on {
+    display: grid; grid-template-columns: 330px 1fr; gap: 16px;
+    padding: 14px 22px 16px; border-top: 3px solid var(--x); flex: 1; min-height: 0;
+  }
+  .left { overflow-y: auto; min-height: 0; }
+  .right { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 19px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 4px; }
+  .field label b { font-size: 20px; color: var(--x); }
+  .field input[type=range] { width: 100%; height: 22px; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 16px; margin-bottom: 12px; cursor: pointer; }
+  .check input { width: 20px; height: 20px; }
+  select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--line); font-family: inherit; font-size: 15px; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; font-family: inherit; }
+  .btn.primary { background: var(--x); color: #fff; }
+  .btn.secondary { background: var(--range); color: #fff; }
+  .btn.purple { background: var(--z); color: #fff; }
+  .btn.orange { background: var(--y); color: #fff; }
+  .btn.ghost { background: #eef0f5; color: var(--ink); }
+  .btn.outline { background: #fff; color: var(--ink); border: 2px solid var(--line); }
+  .btn:hover { filter: brightness(1.07); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .row2 .btn { margin-top: 8px; }
+  .subhead { font-size: 13px; color: var(--muted); margin: 14px 0 0; font-weight: 600; }
+
+  /* ---- 그림 영역 ---- */
+  .stage { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px; }
+  .stage h3 { margin: 2px 0; text-align: center; font-size: 17px; color: var(--muted); font-weight: 600; flex: none; }
+  .stage hr { border: none; border-top: 1px dashed var(--line); margin: 4px 0; flex: none; }
+  .stage.split { flex-direction: row; gap: 8px; }
+  .pane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .vline { flex: none; width: 0; border-left: 1px dashed var(--line); }
+  .svgbox { flex: 1; min-height: 0; position: relative; }
+  .svgbox svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .legend { display: flex; gap: 18px; justify-content: center; font-size: 15px; color: var(--muted); flex: none; flex-wrap: wrap; }
+  .legend span::before { content: ""; display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; background: var(--c); }
+
+  /* ---- 결과 띠 (그림 아래) ---- */
+  .info { flex: none; display: grid; gap: 12px; padding: 12px; }
+  .info.c4 { grid-template-columns: 1.1fr 1.4fr 1fr 1.4fr; }
+  .box { background: #f8f9fc; border-radius: 10px; padding: 10px 12px; min-width: 0; }
+  .box .k { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .box .k:first-child { margin-top: 0; }
+  .box .v { font-size: 18px; font-weight: 700; word-break: keep-all; }
+  .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 14px; margin: 4px 4px 0 0; background: #e8eaf0; }
+  .tag.on { background: #d6f0e3; color: #1d7a52; font-weight: 700; }
+  table { border-collapse: collapse; width: 100%; font-size: 16px; margin-top: 4px; background: #fff; }
+  td, th { border: 1px solid var(--line); padding: 4px; text-align: center; }
+  th { background: #eef1f7; font-weight: 600; white-space: nowrap; }
+  .note { font-size: 15px; color: var(--muted); line-height: 1.55; margin-top: 12px; background: #f8f9fc; border-radius: 8px; padding: 10px; }
+  .box.note { margin-top: 0; }
+  .note.good { background: #e9f7f0; color: #1d6b48; }
+  .note.bad { background: #fdecec; color: #a12a2a; }
+  .counter { font-size: 14px; color: var(--muted); text-align: center; margin-top: 6px; min-height: 18px; }
+
+  /* ---- ④ 직접 대응시키기 ---- */
+  .formula { text-align: center; font-size: 30px; font-weight: 700; margin: 2px 0 0; flex: none; font-family: "Times New Roman", serif; }
+  .formula small { font-family: "Pretendard", "Malgun Gothic", sans-serif; font-size: 16px; color: var(--muted); font-weight: 500; margin-left: 10px; }
+  .info.c2 { grid-template-columns: 1fr 2.3fr; }
+  #pFeed { font-size: 18px; line-height: 1.5; }
+  #pFeed .big { font-size: 22px; font-weight: 700; }
+  .ok { color: #1d7a52; } .ng { color: var(--bad); }
+  .progress { font-size: 16px; text-align: center; margin-top: 10px; font-weight: 600; }
+  .qrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+  .qlabel { width: 64px; font-weight: 700; font-size: 17px; flex: none; }
+  .chip { min-width: 42px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 999px; cursor: pointer; font-weight: 700; font-size: 16px; background: #fff; font-family: inherit; }
+  .chip.sel { background: var(--x); color: #fff; border-color: var(--x); }
+  .qres { font-weight: 700; font-size: 16px; margin-left: 6px; }
+  .qhead { font-weight: 700; font-size: 17px; margin-bottom: 4px; }
+  .qbtn { width: auto; padding: 9px 26px; margin-top: 6px; }
+
+  /* ---- ② 정의역이 실수일 때 ---- */
+  .inrow { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; font-size: 16px; flex-wrap: wrap; }
+  .inrow input[type=number] { width: 50px; padding: 6px; font-size: 17px; border-radius: 8px; border: 1px solid var(--line); font-family: inherit; text-align: center; }
+  .inrow select { width: auto; font-size: 16px; }
+  .inrow .lbl { width: 78px; color: var(--muted); font-size: 14px; }
+  .prev { font-size: 17px; font-weight: 700; color: var(--x); margin: 2px 0 6px; }
+  .xslider { display: flex; gap: 10px; align-items: center; flex: none; padding: 2px 12px 0; font-size: 16px; }
+  .xslider input { flex: 1; height: 22px; }
+  .xslider span { min-width: 260px; font-weight: 700; }
+  .bigset { font-size: 22px; font-weight: 700; }
+
+  .arrow { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw .6s ease forwards; }
+  .arrowHead { opacity: 0; animation: fade .2s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes fade { to { opacity: 1; } }
+  .clickable { cursor: pointer; }
+  .clickable:hover circle { filter: drop-shadow(0 0 4px rgba(0,0,0,.35)); }
+
+  /* 작은 화면(노트북·태블릿)에서는 스크롤 허용 */
+  @media (max-width: 1000px), (max-height: 640px) {
+    body { height: auto; overflow: auto; }
+    .tab.on { grid-template-columns: 1fr; }
+    .svgbox { flex: none; aspect-ratio: 760 / 480; }
+    .stage.split { flex-direction: column; }
+    .info.c4, .info.c2 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>함수 탐구 · 공통수학2</h1>
+    <p>정의역 · 공역 · 치역 → 합성함수 → 역함수</p>
+  </div>
+  <nav>
+    <button data-tab="t1" class="on">① 정의역 · 공역 · 치역</button>
+    <button data-tab="t5">② 정의역이 실수일 때</button>
+    <button data-tab="t2">③ 합성함수</button>
+    <button data-tab="t3">④ 역함수</button>
+    <button data-tab="t4">⑤ 직접 대응시키기</button>
+  </nav>
+</header>
+
+<!-- ================= ① 정의역·공역·치역 ================= -->
+<section class="tab on" id="t1">
+  <div class="left card">
+    <h2>설정</h2>
+    <div class="field">
+      <label>정의역 X의 원소 개수 <b id="nXv">4</b></label>
+      <input type="range" id="nX" min="1" max="7" value="4">
+    </div>
+    <div class="field">
+      <label>공역 Y의 원소 개수 <b id="nYv">5</b></label>
+      <input type="range" id="nY" min="1" max="7" value="5">
+    </div>
+    <div class="field">
+      <label>치역 f(X)의 원소 개수 <b id="nRv">3</b></label>
+      <input type="range" id="nR" min="1" max="4" value="3">
+      <div class="hint" id="rHint"></div>
+    </div>
+    <div class="field">
+      <label>원소 표시</label>
+      <select id="kind">
+        <option value="num">X: 숫자, Y: 숫자</option>
+        <option value="mix">X: 숫자, Y: 문자</option>
+        <option value="alpha">X: 문자, Y: 문자</option>
+      </select>
+    </div>
+    <button class="btn primary" id="btnNew">집합 새로 만들기</button>
+    <button class="btn secondary" id="btnRe">함수 재설정 ↻</button>
+    <div class="subhead">특별한 함수</div>
+    <div class="row2">
+      <button class="btn outline" id="btnConst">상수함수</button>
+      <button class="btn outline" id="btnId">항등함수</button>
+    </div>
+    <div class="counter" id="counter"></div>
+    <div class="note" id="t1Note">
+      <b>함수의 조건</b><br>
+      X의 <u>각 원소</u>에 Y의 원소가 <u>오직 하나씩</u> 대응해야 합니다.<br>
+      → X의 모든 원소에서 화살표가 정확히 1개씩 나갑니다.<br>
+      → Y에는 화살표를 받지 않는 원소가 있어도 됩니다.
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage">
+      <div class="legend">
+        <span style="--c:#dbe6fb">정의역 X</span>
+        <span style="--c:#fbe5d8">공역 Y</span>
+        <span style="--c:#cdeedd">치역 f(X)</span>
+      </div>
+      <div class="svgbox"><svg id="svg1" viewBox="0 0 760 480"></svg></div>
+    </div>
+    <div class="card info c4">
+      <div class="box">
+        <div class="k">정의역 X</div><div class="v" id="dX"></div>
+        <div class="k" id="dYk">공역 Y</div><div class="v" id="dY"></div>
+        <div class="k">치역 f(X)</div><div class="v" id="dR" style="color:var(--range)"></div>
+      </div>
+      <div class="box"><div class="k">대응표</div><table id="tbl"></table></div>
+      <div class="box"><div class="k">함수의 종류</div><div id="dType"></div></div>
+      <div class="box note" id="dCount"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ② 합성함수 ================= -->
+<section class="tab" id="t2">
+  <div class="left card">
+    <h2>설정</h2>
+    <div class="field">
+      <label>X의 원소 개수 <b id="cXv">3</b></label>
+      <input type="range" id="cX" min="2" max="4" value="3">
+    </div>
+    <label class="check"><input type="checkbox" id="cExtra" checked> Y, Z에 여분 원소 1개씩 넣기</label>
+    <div class="hint" style="margin:-6px 0 8px">f(x)로 나오지 않는 원소가 Y에 1개 생깁니다.</div>
+    <button class="btn primary" id="cNew">새 문제 (f, g 모두)</button>
+    <div class="row2">
+      <button class="btn orange" id="cReF">f 재설정 ↻</button>
+      <button class="btn purple" id="cReG">g 재설정 ↻</button>
+    </div>
+    <button class="btn ghost" id="cClear">따라가기 해제</button>
+    <div class="note">
+      <b>사용법</b><br>
+      X의 원소(동그라미)를 <u>클릭</u>하면 x → f(x) → g(f(x)) 경로와 계산 과정이 나옵니다.<br><br>
+      <b>(g∘f)(x) = g(f(x))</b><br>
+      f를 <u>먼저</u>, g를 <u>나중에</u> 적용합니다.
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage split">
+      <div class="pane" style="flex:900">
+        <h3>f : X → Y,  g : Y → Z</h3>
+        <div class="formula" id="cFormFG"></div>
+        <div class="svgbox"><svg id="svg2a" viewBox="0 0 900 400"></svg></div>
+      </div>
+      <div class="vline"></div>
+      <div class="pane" style="flex:600">
+        <h3>합성함수 g∘f : X → Z</h3>
+        <div class="formula" id="cFormGF"></div>
+        <div class="svgbox"><svg id="svg2b" viewBox="0 0 600 400"></svg></div>
+      </div>
+    </div>
+    <div class="card info c4">
+      <div class="box">
+        <div class="k">X</div><div class="v" id="cdX"></div>
+        <div class="k">Y</div><div class="v" id="cdY"></div>
+        <div class="k">Z</div><div class="v" id="cdZ"></div>
+      </div>
+      <div class="box"><div class="k">대응표</div><table id="ctbl"></table></div>
+      <div class="box">
+        <div class="k">g의 치역 g(Y)</div><div class="v" id="cdGR"></div>
+        <div class="k">g∘f의 치역 (g∘f)(X)</div><div class="v" id="cdGFR" style="color:var(--range)"></div>
+      </div>
+      <div class="box note" id="cNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ③ 역함수 ================= -->
+<section class="tab" id="t3">
+  <div class="left card">
+    <h2>설정</h2>
+    <label class="check"><input type="checkbox" id="iBij" checked> 일대일대응만 만들기</label>
+    <div class="field">
+      <label>X의 원소 개수 <b id="iXv">4</b></label>
+      <input type="range" id="iX" min="1" max="7" value="4">
+    </div>
+    <div class="field">
+      <label>Y의 원소 개수 <b id="iYv">4</b></label>
+      <input type="range" id="iY" min="1" max="7" value="4">
+      <div class="hint" id="iHint"></div>
+    </div>
+    <button class="btn primary" id="iNew">집합 새로 만들기</button>
+    <button class="btn secondary" id="iRe">함수 재설정 ↻</button>
+    <button class="btn purple" id="iFlip">화살표 거꾸로 보내기 ⇄</button>
+    <div class="note">
+      <b>역함수가 존재할 조건</b><br>
+      f : X → Y 가 <u>일대일대응</u>일 때만 역함수 f<sup>−1</sup> : Y → X 가 존재합니다.<br><br>
+      ‘일대일대응만 만들기’를 끄고 화살표를 거꾸로 보내 보세요.
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage split">
+      <div class="pane">
+        <h3>f : X → Y</h3>
+        <div class="svgbox"><svg id="svg3a" viewBox="0 0 760 400"></svg></div>
+      </div>
+      <div class="vline"></div>
+      <div class="pane">
+        <h3 id="iTitle">대응을 거꾸로 하면?</h3>
+        <div class="svgbox"><svg id="svg3b" viewBox="0 0 760 400"></svg></div>
+      </div>
+    </div>
+    <div class="card info c4">
+      <div class="box">
+        <div class="k">X</div><div class="v" id="idX"></div>
+        <div class="k">Y</div><div class="v" id="idY"></div>
+      </div>
+      <div class="box"><div class="k">f의 대응표</div><table id="itbl"></table></div>
+      <div class="box"><div class="k">거꾸로 한 대응표</div><table id="itbl2"></table></div>
+      <div class="box note" id="iNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ② 정의역이 실수일 때 ================= -->
+<section class="tab" id="t5">
+  <div class="left card">
+    <h2>함수</h2>
+    <div class="inrow">
+      <select id="rType">
+        <option value="lin">일차함수</option>
+        <option value="quad">이차함수</option>
+        <option value="const">상수함수</option>
+      </select>
+    </div>
+    <div id="rLin" class="inrow">f(x) = <input type="number" id="rA" value="2"> x + <input type="number" id="rB" value="1"></div>
+    <div id="rQuad" class="inrow" style="display:none">f(x) = <input type="number" id="rQa" value="1">(x − <input type="number" id="rQp" value="1">)² + <input type="number" id="rQq" value="-2"></div>
+    <div id="rConst" class="inrow" style="display:none">f(x) = <input type="number" id="rC" value="3"></div>
+
+    <h2 style="margin-top:14px">정의역</h2>
+    <div class="inrow"><span class="lbl">왼쪽 끝</span>
+      <input type="number" id="rLv" value="-1">
+      <select id="rLt"><option value="le">≤ x (포함)</option><option value="lt">&lt; x (미포함)</option><option value="none">없음 (−∞)</option></select>
+    </div>
+    <div class="inrow"><span class="lbl">오른쪽 끝</span>
+      <select id="rRt"><option value="le">x ≤ (포함)</option><option value="lt">x &lt; (미포함)</option><option value="none">없음 (+∞)</option></select>
+      <input type="number" id="rRv" value="2">
+    </div>
+    <div class="prev" id="rDomPrev"></div>
+
+    <label class="check"><input type="checkbox" id="rHide" checked> 치역 가리기 (먼저 생각해 보기)</label>
+    <button class="btn primary" id="rRand">무작위 문제</button>
+    <button class="btn secondary" id="rSweep">정의역 훑어보기 ▶</button>
+    <button class="btn purple" id="rShow">치역 보기</button>
+    <div class="note">
+      정의역과 공역이 따로 주어지지 않으면<br>
+      · <b>정의역</b> = 함숫값이 정의되는 <u>실수 전체</u><br>
+      · <b>공역</b> = <u>실수 전체</u><br>
+      로 생각합니다.
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage">
+      <div class="formula" id="rFormula"></div>
+      <div class="svgbox"><svg id="svg5" viewBox="0 0 760 470"></svg></div>
+      <div class="xslider">x 움직이기 <input type="range" id="rX" step="0.05"> <span id="rXv"></span></div>
+    </div>
+    <div class="card info c4">
+      <div class="box"><div class="k">정의역</div><div class="bigset" id="rdD" style="color:var(--x)"></div></div>
+      <div class="box"><div class="k">공역</div><div class="bigset" id="rdC" style="color:var(--y)">실수 전체</div></div>
+      <div class="box"><div class="k">치역 { f(x) | x ∈ 정의역 }</div><div class="bigset" id="rdR" style="color:var(--range)"></div></div>
+      <div class="box note" id="rExp"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ④ 직접 대응시키기 ================= -->
+<section class="tab" id="t4">
+  <div class="left card">
+    <h2>설정</h2>
+    <div class="field">
+      <label>함수 종류</label>
+      <select id="pType">
+        <option value="lin">일차함수</option>
+        <option value="quad">이차함수</option>
+        <option value="const">상수함수</option>
+        <option value="id">항등함수</option>
+        <option value="mix">섞어서 (무작위)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>X의 원소 개수 <b id="pNv">4</b></label>
+      <input type="range" id="pN" min="3" max="5" value="4">
+    </div>
+    <button class="btn primary" id="pNew">새 문제</button>
+    <button class="btn ghost" id="pReset">처음부터 다시</button>
+    <button class="btn outline" id="pShow">정답 화살표 보기</button>
+    <div class="progress" id="pProg"></div>
+    <div class="note">
+      <b>사용법</b><br>
+      ① X의 원소를 클릭<br>
+      ② f(x)를 계산해서 Y의 원소를 클릭<br>
+      → 화살표가 그려지고 맞았는지 알려 줍니다.<br><br>
+      모든 원소를 대응시키면 <b>정의역 · 공역 · 치역</b>을 묻는 질문이 나옵니다.
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage">
+      <div class="formula" id="pFormula"></div>
+      <div class="svgbox"><svg id="svg4" viewBox="0 0 760 430"></svg></div>
+    </div>
+    <div class="card info c2">
+      <div class="box" id="pFeed"></div>
+      <div class="box" id="pQuiz"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ===================================================================
+// 공통 도구
+// ===================================================================
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const COLORS = ["#3b6fd8", "#d8473b", "#2f9e6e", "#9b4fd8", "#d89b1f", "#1fa3b8", "#d84f9b"];
+const SETC = {
+  X: { stroke: "#3b6fd8", fill: "#dbe6fb" },
+  Y: { stroke: "#d8763b", fill: "#fbe5d8" },
+  Z: { stroke: "#8a4fd8", fill: "#ebdffb" },
+};
+const GRAY = "#9aa0aa", BAD = "#d63b3b";
+
+const rand = n => Math.floor(Math.random() * n);
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const sample = (pool, k) => shuffle(pool).slice(0, k);
+const sortEl = a => a.slice().sort((p, q) => (typeof p === "number" ? p - q : String(p).localeCompare(String(q))));
+const setStr = a => "{ " + sortEl(a).join(", ") + " }";
+const uniq = a => [...new Set(a)];
+
+const POOLS = {
+  num: [...Array(20).keys()].map(i => i - 4),           // -4 ~ 15
+  alpha: "abcdefghijklmnpqrstuvw".split(""),
+  big: [...Array(31).keys()].map(i => i + 10),         // 10 ~ 40
+};
+const makeElements = (n, pool) => sortEl(sample(POOLS[pool], n));
+const randomFunc = (A, B) => Object.fromEntries(A.map(a => [a, B[rand(B.length)]]));
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function text(str, x, y, attrs, parent) {
+  const t = el("text", Object.assign({ x, y, "text-anchor": "middle", "dominant-baseline": "central" }, attrs), parent);
+  t.textContent = str; return t;
+}
+function markerFor(svg, color) {
+  const id = svg.id + "-m" + color.replace("#", "");
+  if (!svg.querySelector("#" + id)) {
+    const defs = svg.querySelector("defs") || el("defs", {}, svg);
+    const m = el("marker", { id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" }, defs);
+    el("path", { d: "M0,0 L10,5 L0,10 z", fill: color }, m);
+  }
+  return `url(#${id})`;
+}
+function clearSvg(svg) { svg.innerHTML = ""; el("defs", {}, svg); }
+
+function drawSet(svg, { cx, cy, rx, ry, c, name, sub }) {
+  el("ellipse", { cx, cy, rx, ry, fill: c.fill, stroke: c.stroke, "stroke-width": 2 }, svg);
+  text(name, cx, cy - ry - 22, { "font-size": 28, "font-weight": 700, fill: c.stroke }, svg);
+  if (sub) text(sub, cx, cy + ry + 18, { "font-size": 16, fill: c.stroke, "font-weight": 600 }, svg);
+}
+function column(elems, cx, cy, span, breakAt = -1) {
+  const n = elems.length, g = Math.min(52, span / Math.max(n, 1));
+  const extra = breakAt > 0 && breakAt < n ? 22 : 0;
+  let y = cy - ((n - 1) * g + extra) / 2;
+  const pos = {};
+  elems.forEach((e, i) => { if (i === breakAt && i > 0) y += extra; pos[e] = { x: cx, y }; y += g; });
+  return pos;
+}
+function drawArrow(svg, a, b, color, { delay = 0, anim = true, op = 1, w = 2.6 } = {}) {
+  const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 1;
+  const ux = dx / L, uy = dy / L;
+  const x1 = a.x + ux * 20, y1 = a.y + uy * 20, x2 = b.x - ux * 21, y2 = b.y - uy * 21;
+  const g = el("g", { opacity: op }, svg);
+  const line = el("line", { x1, y1, x2, y2, stroke: color, "stroke-width": w, "stroke-linecap": "round" }, g);
+  const head = el("line", { x1: x2 - ux, y1: y2 - uy, x2, y2, stroke: color, "stroke-width": w, "marker-end": markerFor(svg, color) }, g);
+  if (anim) {
+    line.setAttribute("class", "arrow");
+    line.style.setProperty("--len", Math.hypot(x2 - x1, y2 - y1));
+    line.style.animationDelay = delay + "s";
+    head.setAttribute("class", "arrowHead");
+    head.style.animationDelay = (delay + 0.55) + "s";
+  }
+  return g;
+}
+function drawNode(svg, p, label, stroke, { w = 2.5, ink = "#1f2430", dash = null, onClick = null, op = 1, fill = "#fff" } = {}) {
+  const g = el("g", { opacity: op }, svg);
+  const c = el("circle", { cx: p.x, cy: p.y, r: 18, fill, stroke, "stroke-width": w }, g);
+  if (dash) c.setAttribute("stroke-dasharray", dash);
+  text(label, p.x, p.y, { "font-size": 17, "font-weight": 700, fill: ink }, g);
+  if (onClick) { g.setAttribute("class", "clickable"); g.addEventListener("click", onClick); }
+  return g;
+}
+function table(rows) {
+  return rows.map(r => "<tr><th>" + r[0] + "</th>" + r.slice(1).map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
+}
+
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === b.dataset.tab));
+  if (b.dataset.tab === "t1") render1();
+  if (b.dataset.tab === "t2") renderComp(true);
+  if (b.dataset.tab === "t3") renderInv(true);
+  if (b.dataset.tab === "t4") render4();
+  if (b.dataset.tab === "t5") render5();
+}));
+
+// ===================================================================
+// ① 정의역 · 공역 · 치역
+// ===================================================================
+let X = [], Y = [], f = {}, prevKey = "", resetCount = 0, idMode = false;
+
+function syncLimits() {
+  const nX = +$("nX").value, nY = +$("nY").value, maxR = Math.min(nX, nY);
+  $("nR").max = maxR;
+  if (+$("nR").value > maxR) $("nR").value = maxR;
+  $("nXv").textContent = nX; $("nYv").textContent = nY; $("nRv").textContent = $("nR").value;
+  $("rHint").textContent = `가능한 치역의 원소 개수: 1 ~ ${maxR}`;
+}
+function makeFunction() {
+  const r = +$("nR").value;
+  for (let tries = 0; tries < 60; tries++) {
+    const R = sample(Y, r), xs = shuffle(X), g = {};
+    xs.forEach((x, i) => { g[x] = i < r ? R[i] : R[rand(r)]; });
+    const key = X.map(x => g[x]).join("|");
+    if (key !== prevKey || tries === 59) { prevKey = key; return g; }
+  }
+}
+function newSets() {
+  const type = $("kind").value;
+  X = makeElements(+$("nX").value, type === "alpha" ? "alpha" : "num");
+  Y = makeElements(+$("nY").value, type === "num" ? "num" : "alpha");
+  prevKey = ""; resetCount = 0; idMode = false;
+  f = makeFunction(); render1();
+}
+function reFunction() { resetCount++; idMode = false; f = makeFunction(); render1(); }
+
+// 상수함수: 치역의 원소 1개
+function makeConstant() {
+  if (idMode) newSets();
+  $("nR").value = 1; syncLimits();
+  reFunction();
+}
+// 항등함수: 공역 = 정의역 = X, f(x) = x
+function makeIdentity() {
+  $("nY").value = $("nX").value; $("nR").value = $("nX").value; syncLimits();
+  Y = X.slice();
+  f = Object.fromEntries(X.map(x => [x, x]));
+  prevKey = X.join("|"); idMode = true;
+  render1();
+}
+
+function render1() {
+  const svg = $("svg1"); clearSvg(svg);
+  const cxX = 200, cxY = 560, cy = 250;
+  const yName = idMode ? "X" : "Y";
+  drawSet(svg, { cx: cxX, cy, rx: 125, ry: 190, c: SETC.X, name: "X", sub: "정의역" });
+  drawSet(svg, { cx: cxY, cy, rx: 125, ry: 190, c: idMode ? SETC.X : SETC.Y, name: yName, sub: idMode ? "공역 (= 정의역)" : "공역" });
+  text("f", 380, 38, { "font-size": 26, "font-style": "italic", "font-family": "serif", fill: "#444" }, svg);
+
+  const rangeSet = new Set(Object.values(f));
+  const inR = sortEl(Y.filter(y => rangeSet.has(y))), outR = sortEl(Y.filter(y => !rangeSet.has(y)));
+  const posX = column(X, cxX - 10, cy, 300);
+  const posY = column([...inR, ...outR], cxY + 10, cy, 300, inR.length);
+
+  if (inR.length) {
+    const top = posY[inR[0]].y - 25, bot = posY[inR[inR.length - 1]].y + 25;
+    el("rect", { x: cxY - 50, y: top, width: 120, height: bot - top, rx: 25, fill: "#cdeedd", stroke: "#2f9e6e", "stroke-width": 2, "stroke-dasharray": "6 4" }, svg);
+    text("치역 f(X)", cxY + 10, top - 12, { "font-size": 14, fill: "#2f9e6e", "font-weight": 700 }, svg);
+  }
+  X.forEach((x, i) => drawArrow(svg, posX[x], posY[f[x]], COLORS[i % 7], { delay: i * 0.12 }));
+  X.forEach((x, i) => drawNode(svg, posX[x], x, COLORS[i % 7]));
+  Y.forEach(y => {
+    const on = rangeSet.has(y);
+    drawNode(svg, posY[y], y, on ? "#2f9e6e" : "#b9a596", { w: on ? 2.5 : 1.5, ink: on ? "#1f2430" : "#8a7a6e" });
+  });
+  renderInfo1(inR);
+}
+
+function comb(n, k) { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); }
+function fact(n) { return n <= 1 ? 1 : n * fact(n - 1); }
+function stirling2(n, k) { let s = 0; for (let j = 0; j <= k; j++) s += (j % 2 ? -1 : 1) * comb(k, j) * Math.pow(k - j, n); return Math.round(s / fact(k)); }
+
+function renderInfo1(R) {
+  const nX = X.length, nY = Y.length, r = R.length;
+  $("dX").textContent = setStr(X);
+  $("dYk").textContent = idMode ? "공역 (= X)" : "공역 Y";
+  $("dY").textContent = setStr(Y);
+  $("dR").textContent = setStr(R);
+  $("tbl").innerHTML = table([["x", ...X], ["f(x)", ...X.map(x => f[x])]]);
+  const oneToOne = r === nX, onto = r === nY;
+  const isId = idMode;
+  const tags = [
+    ["일대일함수", oneToOne], ["일대일대응", oneToOne && onto], ["상수함수", r === 1],
+    ["항등함수", isId], ["치역 = 공역", onto],
+  ];
+  $("dType").innerHTML = tags.map(([t, on]) => `<span class="tag ${on ? "on" : ""}">${on ? "✔ " : ""}${t}</span>`).join("");
+
+  if (isId) {
+    $("dCount").innerHTML = `<b>항등함수</b> I : X → X<br>X의 각 원소 x에 자기 자신 x를 대응시키는 함수<br><b>I(x) = x</b>  → 일대일대응입니다.`;
+  } else if (r === 1) {
+    $("dCount").innerHTML = `<b>상수함수</b><br>X의 모든 원소가 Y의 <u>한 원소 ${R[0]}</u>에만 대응합니다.<br><b>f(x) = ${R[0]}</b>  → 치역의 원소는 1개입니다.`;
+  } else {
+    const total = Math.pow(nY, nX), exact = comb(nY, r) * stirling2(nX, r) * fact(r);
+    $("dCount").innerHTML =
+      `X → Y 함수: 모두 <b>${nY}<sup>${nX}</sup> = ${total.toLocaleString()}</b>개<br>` +
+      `그중 치역의 원소가 <b>${r}개</b>인 함수: <b>${exact.toLocaleString()}</b>개<br>` +
+      `<span style="font-size:13px">‘함수 재설정’은 이 중 하나를 다시 고릅니다.</span>`;
+  }
+  $("counter").textContent = resetCount ? `함수 재설정 ${resetCount}회` : "";
+}
+
+["nX", "nY"].forEach(id => $(id).addEventListener("input", () => { syncLimits(); newSets(); }));
+$("nR").addEventListener("input", () => { syncLimits(); if (idMode) { newSets(); } else reFunction(); });
+$("kind").addEventListener("change", newSets);
+$("btnNew").addEventListener("click", newSets);
+$("btnRe").addEventListener("click", reFunction);
+$("btnConst").addEventListener("click", makeConstant);
+$("btnId").addEventListener("click", makeIdentity);
+
+// ===================================================================
+// ② 합성함수
+// ===================================================================
+let cX = [], cY = [], cZ = [], cf = {}, cg = {}, cSel = null;
+let cF = null, cG = null;           // 일차함수 계수 { a, b } : ax + b
+
+const linVal = (L, x) => L.a * x + L.b;
+const linStr = L => fmtPoly(0, L.a, L.b);
+const linSubst = (name, L, x) => `${name}(${x}) = ` + polyTerms(0, L.a, L.b, x < 0 ? `(${x})` : `${x}`, "×") + ` = ${linVal(L, x)}`;
+function randLin(slopes, lo, hi) {
+  for (;;) {
+    const L = { a: sample(slopes, 1)[0], b: lo + rand(hi - lo + 1) };
+    if (!(L.a === 1 && L.b === 0)) return L;   // f(x) = x 같은 너무 쉬운 식 제외
+  }
+}
+// 여분 원소: 주어진 값들 근처에서 겹치지 않게
+const extras = (vals, k) => k <= 0 ? [] : sample(intRange(Math.min(...vals) - 3, Math.max(...vals) + 3).filter(v => !vals.includes(v)), k);
+
+// newF / newG: 해당 함수를 새로 뽑을지
+function buildComp(newF, newG) {
+  const useExtra = $("cExtra").checked;
+  for (let t = 0; t < 400; t++) {
+    // 계산이 쉬운 작은 계수, 작은 수
+    const F = (newF || !cF || t > 200) ? randLin([-1, 1, 2], -2, 3) : cF;
+    const G = (newG || !cG || t > 200) ? randLin([-1, 1, 2], -3, 3) : cG;
+    const fx = uniq(cX.map(x => linVal(F, x)));
+    if (fx.some(v => Math.abs(v) > 9)) continue;
+    const Y = sortEl([...fx, ...extras(fx, useExtra ? 1 : 0)]);
+    const gy = uniq(Y.map(y => linVal(G, y)));
+    if (gy.some(v => Math.abs(v) > 15)) continue;
+    const Z = sortEl([...gy, ...extras(gy, useExtra ? 1 : 0)]);
+    cF = F; cG = G; cY = Y; cZ = Z;
+    cf = Object.fromEntries(cX.map(x => [x, linVal(F, x)]));
+    cg = Object.fromEntries(cY.map(y => [y, linVal(G, y)]));
+    return;
+  }
+}
+function newComp() {
+  $("cXv").textContent = $("cX").value;
+  cX = sortEl(sample(intRange(-2, 3), +$("cX").value));
+  cSel = null;
+  buildComp(true, true);
+  renderComp(true);
+}
+const gf = x => cg[cf[x]];
+
+function renderComp(anim) {
+  const iSel = cSel === null ? -1 : cX.indexOf(cSel);
+  const dim = on => (cSel === null || on ? 1 : 0.13);
+  const pick = x => () => { cSel = cSel === x ? null : x; renderComp(false); };
+
+  const A = $("svg2a"); clearSvg(A);
+  const cy = 205, ry = 160, rx = 105;
+  drawSet(A, { cx: 150, cy, rx, ry, c: SETC.X, name: "X" });
+  drawSet(A, { cx: 450, cy, rx, ry, c: SETC.Y, name: "Y" });
+  drawSet(A, { cx: 750, cy, rx, ry, c: SETC.Z, name: "Z" });
+  text("f", 300, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: SETC.Y.stroke }, A);
+  text("g", 600, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: SETC.Z.stroke }, A);
+  const pX = column(cX, 150, cy, 260), pY = column(cY, 450, cy, 260), pZ = column(cZ, 750, cy, 260);
+
+  cX.forEach((x, i) => drawArrow(A, pX[x], pY[cf[x]], COLORS[i % 7], { anim, delay: i * 0.1, op: dim(x === cSel) }));
+  const fDone = cX.length * 0.1 + 0.6;
+  cY.forEach((y, j) => {
+    const on = cSel !== null && cf[cSel] === y;
+    drawArrow(A, pY[y], pZ[cg[y]], on ? COLORS[iSel % 7] : GRAY, { anim, delay: fDone + j * 0.1, op: dim(on) });
+  });
+  cX.forEach((x, i) => drawNode(A, pX[x], x, COLORS[i % 7], { onClick: pick(x), w: x === cSel ? 4 : 2.5, op: dim(x === cSel) }));
+  cY.forEach(y => {
+    const on = cSel !== null && cf[cSel] === y;
+    drawNode(A, pY[y], y, on ? COLORS[iSel % 7] : SETC.Y.stroke, { w: on ? 4 : 2, op: dim(on) });
+  });
+  cZ.forEach(z => {
+    const on = cSel !== null && gf(cSel) === z;
+    drawNode(A, pZ[z], z, on ? COLORS[iSel % 7] : SETC.Z.stroke, { w: on ? 4 : 2, op: dim(on) });
+  });
+
+  const B = $("svg2b"); clearSvg(B);
+  drawSet(B, { cx: 150, cy, rx: 105, ry, c: SETC.X, name: "X" });
+  drawSet(B, { cx: 450, cy, rx: 105, ry, c: SETC.Z, name: "Z" });
+  text("g∘f", 300, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: "#2f9e6e" }, B);
+  const qX = column(cX, 150, cy, 260), qZ = column(cZ, 450, cy, 260);
+  const gDone = fDone + cY.length * 0.1 + 0.6;
+  cX.forEach((x, i) => drawArrow(B, qX[x], qZ[gf(x)], COLORS[i % 7], { anim, delay: gDone + i * 0.1, op: dim(x === cSel), w: 3 }));
+  const gfR = new Set(cX.map(gf));
+  cX.forEach((x, i) => drawNode(B, qX[x], x, COLORS[i % 7], { onClick: pick(x), w: x === cSel ? 4 : 2.5, op: dim(x === cSel) }));
+  cZ.forEach(z => {
+    const on = cSel !== null && gf(cSel) === z;
+    drawNode(B, qZ[z], z, on ? COLORS[iSel % 7] : (gfR.has(z) ? "#2f9e6e" : "#b8a6d6"),
+      { w: on ? 4 : 2, ink: gfR.has(z) ? "#1f2430" : "#9a8bb5", op: dim(on) });
+  });
+
+  $("cdX").textContent = setStr(cX);
+  $("cdY").textContent = setStr(cY);
+  $("cdZ").textContent = setStr(cZ);
+  const hl = x => (x === cSel ? ` style="background:#fff4c2"` : "");
+  $("ctbl").innerHTML =
+    "<tr><th>x</th>" + cX.map(x => `<td${hl(x)}>${x}</td>`).join("") + "</tr>" +
+    "<tr><th>f(x)</th>" + cX.map(x => `<td${hl(x)}>${cf[x]}</td>`).join("") + "</tr>" +
+    "<tr><th>g(f(x))</th>" + cX.map(x => `<td${hl(x)}><b>${gf(x)}</b></td>`).join("") + "</tr>";
+  const gR = uniq(Object.values(cg)), gfRa = [...gfR];
+  $("cdGR").textContent = setStr(gR);
+  $("cdGFR").textContent = setStr(gfRa);
+  // 식
+  const GF = { a: cG.a * cF.a, b: cG.a * cF.b + cG.b };
+  $("cFormFG").innerHTML = `f(x) = ${linStr(cF)}  &nbsp;&nbsp;&nbsp;  g(x) = ${linStr(cG)}`;
+  $("cFormGF").innerHTML = `(g∘f)(x) = ${linStr(GF)}`;
+
+  let note = "";
+  if (cSel !== null) {
+    const y = cf[cSel];
+    note = `<b>x = ${cSel} 따라가기</b><br>` +
+      `① ${linSubst("f", cF, cSel)}<br>` +
+      `② ${linSubst("g", cG, y)}<br>` +
+      `→ <b>(g∘f)(${cSel}) = g(f(${cSel})) = g(${y}) = ${gf(cSel)}</b><br>` +
+      `<span style="font-size:13px">확인: ${linSubst("(g∘f)", GF, cSel)}</span>`;
+  } else {
+    note = `<b>(g∘f)(x) = g(f(x))</b> = g(${linStr(cF)})<br>` +
+      ` = ${polyTerms(0, cG.a, cG.b, `(${linStr(cF)})`, "")} = <b>${linStr(GF)}</b><br>`;
+    const unused = cY.filter(y => !Object.values(cf).includes(y));
+    note += unused.length
+      ? `<span style="font-size:13px">Y의 ${setStr(unused)}은 f(x)로 나오지 않아서 g∘f에서는 쓰이지 않습니다.</span>`
+      : `<span style="font-size:13px">X의 원소를 클릭하면 계산 과정이 나옵니다.</span>`;
+  }
+  $("cNote").innerHTML = note;
+}
+
+$("cX").addEventListener("input", newComp);
+$("cExtra").addEventListener("change", () => { cSel = null; buildComp(false, false); renderComp(true); });
+$("cNew").addEventListener("click", newComp);
+$("cReF").addEventListener("click", () => { cSel = null; buildComp(true, false); renderComp(true); });
+$("cReG").addEventListener("click", () => { cSel = null; buildComp(false, true); renderComp(true); });
+$("cClear").addEventListener("click", () => { cSel = null; renderComp(false); });
+
+// ===================================================================
+// ③ 역함수
+// ===================================================================
+let iX = [], iY = [], iF = {}, iFlipped = false;
+
+function isBijection(A, B, F) { return A.length === B.length && uniq(A.map(a => F[a])).length === B.length; }
+
+function syncInv() {
+  const bij = $("iBij").checked;
+  if (bij) $("iY").value = $("iX").value;
+  $("iY").disabled = bij;
+  $("iXv").textContent = $("iX").value; $("iYv").textContent = $("iY").value;
+  $("iHint").textContent = bij ? "일대일대응이려면 n(X) = n(Y)" : "";
+}
+function makeInvFunc() {
+  if ($("iBij").checked) {
+    const ys = shuffle(iY); return Object.fromEntries(iX.map((x, i) => [x, ys[i]]));
+  }
+  let F;
+  for (let t = 0; t < 80; t++) { F = randomFunc(iX, iY); if (!isBijection(iX, iY, F)) break; }
+  return F;
+}
+function newInv() {
+  syncInv();
+  iX = makeElements(+$("iX").value, "num");
+  iY = makeElements(+$("iY").value, "alpha");
+  iF = makeInvFunc(); iFlipped = false; renderInv(true);
+}
+
+function renderInv(anim) {
+  const cy = 205, ry = 160, rx = 120;
+  const A = $("svg3a"); clearSvg(A);
+  drawSet(A, { cx: 200, cy, rx, ry, c: SETC.X, name: "X" });
+  drawSet(A, { cx: 560, cy, rx, ry, c: SETC.Y, name: "Y" });
+  text("f", 380, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: "#444" }, A);
+  const pX = column(iX, 190, cy, 270), pY = column(iY, 570, cy, 270);
+  iX.forEach((x, i) => drawArrow(A, pX[x], pY[iF[x]], COLORS[i % 7], { anim, delay: i * 0.1 }));
+  iX.forEach((x, i) => drawNode(A, pX[x], x, COLORS[i % 7]));
+  iY.forEach(y => drawNode(A, pY[y], y, SETC.Y.stroke, { w: 2 }));
+
+  const pre = Object.fromEntries(iY.map(y => [y, iX.filter(x => iF[x] === y)]));
+  const many = iY.filter(y => pre[y].length > 1), none = iY.filter(y => pre[y].length === 0);
+  const bij = many.length === 0 && none.length === 0;
+
+  const B = $("svg3b"); clearSvg(B);
+  drawSet(B, { cx: 200, cy, rx, ry, c: SETC.Y, name: "Y" });
+  drawSet(B, { cx: 560, cy, rx, ry, c: SETC.X, name: "X" });
+  const qY = column(iY, 190, cy, 270), qX = column(iX, 570, cy, 270);
+  if (!iFlipped) {
+    text("‘화살표 거꾸로 보내기’를 눌러 보세요", 380, cy, { "font-size": 18, fill: GRAY }, B);
+    iY.forEach(y => drawNode(B, qY[y], y, SETC.Y.stroke, { w: 2, op: 0.5 }));
+    iX.forEach((x, i) => drawNode(B, qX[x], x, COLORS[i % 7], { op: 0.5 }));
+    $("iTitle").textContent = "대응을 거꾸로 하면?";
+  } else {
+    $("iTitle").textContent = bij ? "역함수 f⁻¹ : Y → X" : "거꾸로 한 대응 : Y → X  (함수가 아님!)";
+    text(bij ? "f⁻¹" : "?", 380, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: bij ? "#2f9e6e" : BAD }, B);
+    iX.forEach((x, i) => {
+      const y = iF[x], bad = pre[y].length > 1;
+      drawArrow(B, qY[y], qX[x], bad ? BAD : COLORS[i % 7], { anim, delay: i * 0.1, w: bad ? 3 : 2.6 });
+    });
+    iY.forEach(y => {
+      const p = qY[y];
+      if (pre[y].length > 1) {
+        drawNode(B, p, y, BAD, { w: 3.5 });
+        text(`${pre[y].length}개에 대응`, p.x - 30, p.y, { "font-size": 13, fill: BAD, "font-weight": 700, "text-anchor": "end" }, B);
+      } else if (pre[y].length === 0) {
+        drawNode(B, p, y, BAD, { w: 2.5, dash: "4 3", fill: "#fdecec" });
+        text("대응 없음", p.x - 30, p.y, { "font-size": 13, fill: BAD, "font-weight": 700, "text-anchor": "end" }, B);
+      } else drawNode(B, p, y, SETC.Y.stroke, { w: 2.5 });
+    });
+    iX.forEach((x, i) => drawNode(B, qX[x], x, COLORS[i % 7]));
+  }
+
+  $("idX").textContent = setStr(iX);
+  $("idY").textContent = setStr(iY);
+  $("itbl").innerHTML = table([["x", ...iX], ["f(x)", ...iX.map(x => iF[x])]]);
+  const cell = y => pre[y].length === 1 ? pre[y][0]
+    : pre[y].length === 0 ? `<span style="color:${BAD}">없음</span>`
+    : `<span style="color:${BAD}">${pre[y].join(", ")}</span>`;
+  $("itbl2").innerHTML = iFlipped
+    ? table([["y", ...iY], [bij ? "f⁻¹(y)" : "대응", ...iY.map(cell)]])
+    : `<tr><td style="color:${GRAY}">화살표를 거꾸로 보내면 나타납니다</td></tr>`;
+
+  const note = $("iNote");
+  if (!iFlipped) {
+    note.className = "box note";
+    note.innerHTML = "f가 일대일대응인지 먼저 예상해 본 뒤, 화살표를 거꾸로 보내 확인해 보세요.";
+  } else if (bij) {
+    note.className = "box note good";
+    note.innerHTML = `<b>f는 일대일대응 → 역함수가 존재합니다.</b><br>` +
+      `y = f(x) ⇔ x = f<sup>−1</sup>(y)<br>` +
+      `예) f(${iX[0]}) = ${iF[iX[0]]} 이므로 f<sup>−1</sup>(${iF[iX[0]]}) = ${iX[0]}<br>` +
+      `(f<sup>−1</sup>∘f)(x) = x,  (f∘f<sup>−1</sup>)(y) = y`;
+  } else {
+    note.className = "box note bad";
+    let h = "<b>Y에서 X로의 함수가 아닙니다.</b><br>";
+    many.forEach(y => { h += `• ${y} → ${pre[y].length}개(${pre[y].join(", ")}) : <u>일대일함수가 아님</u><br>`; });
+    none.forEach(y => { h += `• ${y} → 대응 없음 : <u>치역 ≠ 공역</u><br>`; });
+    h += "따라서 f의 역함수는 존재하지 않습니다.";
+    note.innerHTML = h;
+  }
+}
+
+$("iBij").addEventListener("change", newInv);
+["iX", "iY"].forEach(id => $(id).addEventListener("input", newInv));
+$("iNew").addEventListener("click", newInv);
+$("iRe").addEventListener("click", () => { iF = makeInvFunc(); iFlipped = false; renderInv(true); });
+$("iFlip").addEventListener("click", () => { iFlipped = true; renderInv(true); });
+
+// ===================================================================
+// ④ 직접 대응시키기
+// ===================================================================
+let P = null;            // 문제 { a, b, c, F, X, Y, R }
+let pMap = {}, pSel = null, pWrong = null, pWrongTimer = null, pMist = 0, pNewArrow = null, pShown = false;
+let pQ = null, pChecked = false;   // 퀴즈 선택 { dom, cod, rng }
+
+const intRange = (lo, hi) => [...Array(hi - lo + 1).keys()].map(i => i + lo);
+
+// ax² + bx + c 를 보기 좋게
+function polyTerms(a, b, c, xs, mul) {
+  const parts = [];
+  const push = (k, body) => { if (k === 0) return; parts.push({ k, body }); };
+  push(a, Math.abs(a) === 1 ? `${xs}²` : `${Math.abs(a)}${mul}${xs}²`);
+  push(b, Math.abs(b) === 1 ? `${xs}` : `${Math.abs(b)}${mul}${xs}`);
+  if (c !== 0 || parts.length === 0) parts.push({ k: c, body: `${Math.abs(c)}` });
+  return parts.map((p, i) => (p.k < 0 ? (i ? " − " : "−") : (i ? " + " : "")) + p.body).join("");
+}
+const fmtPoly = (a, b, c) => polyTerms(a, b, c, "x", "");
+const substStr = x => `f(${x}) = ` + polyTerms(P.a, P.b, P.c, x < 0 ? `(${x})` : `${x}`, "×");
+// 힌트: 상수·항등함수는 대입식이 곧 답이므로 f(x) = ? 만 보여 줌
+const hintStr = x => (P.kind === "const" || P.kind === "id") ? `f(${x}) = ?` : `${substStr(x)} = ?`;
+
+function genProblem() {
+  const type = $("pType").value, n = +$("pN").value;
+  for (let t = 0; t < 300; t++) {
+    const kind = type === "mix" ? sample(["lin", "lin", "quad", "quad", "const", "id"], 1)[0] : type;
+    let a, b, c, xs;
+    if (kind === "const") {                       // f(x) = c
+      a = 0; b = 0; c = rand(11) - 5;
+      xs = sample(intRange(-3, 4), n);
+      const ds = sample(intRange(c - 4, c + 4).filter(v => v !== c), 2 + rand(2));
+      return { kind, a, b, c, F: () => c, X: sortEl(xs), Y: sortEl([c, ...ds]), R: [c] };
+    }
+    if (kind === "id") {                          // f(x) = x,  X → X
+      xs = sortEl(sample(intRange(-3, 5), n));
+      return { kind, a: 0, b: 1, c: 0, F: x => x, X: xs, Y: xs.slice(), R: xs.slice() };
+    }
+    if (kind === "lin") {
+      a = 0; b = sample([-3, -2, -1, 1, 2, 3], 1)[0]; c = rand(9) - 4;
+      xs = sample(intRange(-3, 4), n);
+    } else {
+      const s = rand(2) ? 1 : -1, p = rand(3) - 1, q = rand(7) - 3;
+      a = s; b = -2 * s * p; c = s * p * p + q;
+      xs = sample(intRange(p - 3, p + 3), n);
+    }
+    const F = x => a * x * x + b * x + c;
+    const vals = xs.map(F);
+    if (vals.some(v => Math.abs(v) > 15)) continue;
+    const R = uniq(vals);
+    if (R.length > 7) continue;
+    let extra = Math.random() < 0.15 ? 0 : 1 + rand(2);
+    extra = Math.min(extra, 7 - R.length);
+    const lo = Math.min(...R) - 3, hi = Math.max(...R) + 3;
+    const ds = sample(intRange(lo, hi).filter(v => !R.includes(v)), extra);
+    return { kind, a, b, c, F, X: sortEl(xs), Y: sortEl([...R, ...ds]), R: sortEl(R) };
+  }
+}
+
+function newProblem() {
+  $("pNv").textContent = $("pN").value;
+  P = genProblem();
+  resetProblem();
+}
+function resetProblem() {
+  pMap = {}; pSel = null; pWrong = null; pMist = 0; pNewArrow = null; pShown = false;
+  pQ = { dom: new Set(), cod: new Set(), rng: new Set() }; pChecked = false;
+  clearTimeout(pWrongTimer);
+  setFeed(`X의 원소를 하나 클릭하세요.`);
+  render4();
+}
+const pDone = () => P.X.every(x => pMap[x] !== undefined);
+
+function setFeed(html, cls = "") { $("pFeed").innerHTML = `<div class="${cls}">${html}</div>`; }
+
+function pickX(x) {
+  if (pMap[x] !== undefined) {
+    pSel = null;
+    setFeed(`<span class="big">${x}의 대응은 이미 찾았어요.</span><br>함수에서는 X의 원소 하나에 Y의 원소가 <b>오직 하나</b>만 대응합니다.`);
+  } else {
+    pSel = x;
+    setFeed(`<span class="big">x = ${x} 선택!</span><br>${hintStr(x)} 를 계산해서 공역에서 골라 보세요.`);
+  }
+  render4();
+}
+function pickY(y) {
+  if (pSel === null) {
+    setFeed(`먼저 <b>정의역 X</b>에서 원소를 클릭하세요.`);
+    return;
+  }
+  const x = pSel, ans = P.F(x);
+  if (y === ans) {
+    pMap[x] = y; pNewArrow = x; pSel = null;
+    let msg = `<span class="big ok">✔ 정답!</span><br>${substStr(x)} = <b>${ans}</b>`;
+    if (pDone()) msg += `<br><br><b>모든 원소를 대응시켰어요!</b> 오른쪽 질문에 답해 보세요.`;
+    setFeed(msg);
+  } else {
+    pMist++;
+    pWrong = { x, y }; pNewArrow = null;
+    setFeed(`<span class="big ng">✘ 틀렸어요! (고른 값: ${y})</span><br>${hintStr(x)} 를 다시 계산해 보세요.`);
+    clearTimeout(pWrongTimer);
+    pWrongTimer = setTimeout(() => { pWrong = null; render4(); }, 1300);
+  }
+  render4();
+}
+function showAnswers() {
+  P.X.forEach(x => { pMap[x] = P.F(x); });
+  pSel = null; pNewArrow = null; pShown = true;
+  setFeed(`정답 화살표를 모두 그렸습니다.<br>오른쪽 질문에 답해 보세요.`);
+  render4(true);
+}
+
+function render4(animAll = false) {
+  const isId = P.kind === "id", yName = isId ? "X" : "Y";
+  $("pFormula").innerHTML = `f(x) = ${fmtPoly(P.a, P.b, P.c)}<small>f : X → ${yName}</small>`;
+  const svg = $("svg4"); clearSvg(svg);
+  const cy = 225, ry = 175, cxX = 200, cxY = 560;
+  drawSet(svg, { cx: cxX, cy, rx: 120, ry, c: SETC.X, name: "X" });
+  drawSet(svg, { cx: cxY, cy, rx: 120, ry, c: isId ? SETC.X : SETC.Y, name: yName });
+  const pX = column(P.X, cxX - 10, cy, 300), pY = column(P.Y, cxY + 10, cy, 300);
+  const xi = x => P.X.indexOf(x) % 7;
+
+  // 확정된 화살표
+  P.X.forEach((x, i) => {
+    if (pMap[x] === undefined) return;
+    const anim = animAll || x === pNewArrow;
+    drawArrow(svg, pX[x], pY[pMap[x]], COLORS[xi(x)], { anim, delay: animAll ? i * 0.12 : 0, w: 3 });
+  });
+  // 틀린 시도 (잠깐 보였다 사라짐)
+  if (pWrong) {
+    const g = drawArrow(svg, pX[pWrong.x], pY[pWrong.y], BAD, { anim: false, w: 3 });
+    g.querySelector("line").setAttribute("stroke-dasharray", "8 6");
+    const m = { x: (pX[pWrong.x].x + pY[pWrong.y].x) / 2, y: (pX[pWrong.x].y + pY[pWrong.y].y) / 2 };
+    el("circle", { cx: m.x, cy: m.y, r: 15, fill: "#fff", stroke: BAD, "stroke-width": 2 }, svg);
+    text("✘", m.x, m.y, { "font-size": 18, fill: BAD, "font-weight": 700 }, svg);
+  }
+  // 안내 문구
+  if (pSel !== null) text(`f(${pSel}) 의 값을 오른쪽 집합에서 클릭!`, 380, 418, { "font-size": 16, fill: "#b07a00", "font-weight": 700 }, svg);
+
+  const rangeShown = pChecked;
+  P.X.forEach(x => {
+    const sel = x === pSel, done = pMap[x] !== undefined;
+    drawNode(svg, pX[x], x, COLORS[xi(x)], { onClick: () => pickX(x), w: sel ? 5 : 2.5, fill: sel ? "#fff1b8" : (done ? "#eef4ff" : "#fff") });
+  });
+  P.Y.forEach(y => {
+    const inR = rangeShown && P.R.includes(y);
+    drawNode(svg, pY[y], y, inR ? "#2f9e6e" : (isId ? SETC.X.stroke : SETC.Y.stroke), {
+      onClick: () => pickY(y), w: inR ? 3.5 : 2, fill: inR ? "#cdeedd" : (pSel !== null ? "#fffaf0" : "#fff"),
+    });
+  });
+  if (rangeShown) text("초록색 = 치역", cxY + 10, cy + ry + 18, { "font-size": 15, fill: "#2f9e6e", "font-weight": 700 }, svg);
+
+  const cnt = P.X.filter(x => pMap[x] !== undefined).length;
+  pNewArrow = null;   // 새 화살표는 한 번만 애니메이션
+  $("pProg").innerHTML = `대응 완료 <b>${cnt} / ${P.X.length}</b>  ·  틀린 횟수 <b class="${pMist ? "ng" : ""}">${pMist}</b>`;
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const box = $("pQuiz");
+  if (!pDone()) {
+    box.innerHTML = `<div class="qhead" style="color:var(--muted)">🔒 생각해 보기</div>
+      <div style="color:var(--muted)">X의 모든 원소를 대응시키면 질문이 열립니다.</div>`;
+    return;
+  }
+  const uni = sortEl(uniq([...P.X, ...P.Y]));
+  const ans = { dom: P.X, cod: P.Y, rng: P.R };
+  const names = { dom: "정의역", cod: "공역", rng: "치역" };
+  const same = (s, arr) => s.size === arr.length && arr.every(v => s.has(v));
+  let h = `<div class="qhead">🤔 생각해 보기 — 각각의 원소를 모두 골라 보세요.</div>`;
+  for (const k of ["dom", "cod", "rng"]) {
+    h += `<div class="qrow"><span class="qlabel">${names[k]}</span>`;
+    h += uni.map(v => `<button class="chip ${pQ[k].has(v) ? "sel" : ""}" data-k="${k}" data-v="${v}">${v}</button>`).join("");
+    if (pChecked) {
+      h += same(pQ[k], ans[k])
+        ? `<span class="qres ok">✔ 정답</span>`
+        : `<span class="qres ng">✘ 정답: ${setStr(ans[k])}</span>`;
+    }
+    h += `</div>`;
+  }
+  h += `<button class="btn secondary qbtn" id="pCheck">확인</button>`;
+  if (pChecked) {
+    const allOk = ["dom", "cod", "rng"].every(k => same(pQ[k], ans[k]));
+    h += `<span style="margin-left:12px;font-size:16px">` +
+      (allOk ? `<b class="ok">🎉 모두 정답!</b> ` : ``) +
+      `치역 = { f(x) | x ∈ X } = ${setStr(P.R)} ` +
+      (P.R.length === P.Y.length ? `→ 이번에는 <b>치역 = 공역</b>` : `→ <b>치역 ⊂ 공역</b>, 치역 ≠ 공역`) +
+      `</span>`;
+    if (P.kind === "const")
+      h += `<div style="margin-top:6px;font-size:16px"><b>상수함수</b>: X의 모든 원소가 Y의 한 원소 ${P.c}에만 대응 → 치역의 원소는 <b>1개</b></div>`;
+    if (P.kind === "id")
+      h += `<div style="margin-top:6px;font-size:16px"><b>항등함수</b> I : X → X, I(x) = x → <b>정의역 = 공역 = 치역</b></div>`;
+  }
+  box.innerHTML = h;
+  box.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+    const k = b.dataset.k, v = typeof uni[0] === "number" ? +b.dataset.v : b.dataset.v;
+    pQ[k].has(v) ? pQ[k].delete(v) : pQ[k].add(v);
+    b.classList.toggle("sel");
+  }));
+  $("pCheck").addEventListener("click", () => { pChecked = true; render4(); });
+}
+
+$("pNew").addEventListener("click", newProblem);
+$("pType").addEventListener("change", newProblem);
+$("pN").addEventListener("input", newProblem);
+$("pReset").addEventListener("click", resetProblem);
+$("pShow").addEventListener("click", showAnswers);
+
+// ===================================================================
+// ② 정의역이 실수일 때 (구간 → 부등식으로 나타낸 치역)
+// ===================================================================
+let RF = null;                 // { type, a, b, p, q, c, L, R }  (L/R: {v, inc} 또는 null = 무한)
+let rXcur = null, rRevealed = false, rSweepVis = null, rAnim = null;
+const nfmt = v => Number.isInteger(v) ? `${v}` : `${Math.round(v * 100) / 100}`;
+
+function rF(x) {
+  if (RF.type === "lin") return RF.a * x + RF.b;
+  if (RF.type === "quad") return RF.a * (x - RF.p) ** 2 + RF.q;
+  return RF.c;
+}
+function rIn(x) {
+  const { L, R } = RF;
+  return (!L || (L.inc ? x >= L.v : x > L.v)) && (!R || (R.inc ? x <= R.v : x < R.v));
+}
+const rValid = () => !(RF.L && RF.R && (RF.L.v > RF.R.v || (RF.L.v === RF.R.v && !(RF.L.inc && RF.R.inc))));
+
+function rReadInputs() {
+  const type = $("rType").value;
+  const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? 0 : v; };
+  RF = { type, a: num("rA"), b: num("rB"), p: num("rQp"), q: num("rQq"), c: num("rC") };
+  if (type === "quad") { RF.a = num("rQa") || 1; }
+  if (type === "lin" && RF.a === 0) RF.a = 1;
+  RF.L = $("rLt").value === "none" ? null : { v: num("rLv"), inc: $("rLt").value === "le" };
+  RF.R = $("rRt").value === "none" ? null : { v: num("rRv"), inc: $("rRt").value === "le" };
+  $("rLin").style.display = type === "lin" ? "" : "none";
+  $("rQuad").style.display = type === "quad" ? "" : "none";
+  $("rConst").style.display = type === "const" ? "" : "none";
+  $("rLv").disabled = !RF.L; $("rRv").disabled = !RF.R;
+}
+
+function rDomainStr() {
+  const { L, R } = RF;
+  if (!L && !R) return "실수 전체";
+  if (L && R) {
+    if (L.v === R.v) return `{ ${nfmt(L.v)} }`;
+    return `{ x | ${nfmt(L.v)} ${L.inc ? "≤" : "<"} x ${R.inc ? "≤" : "<"} ${nfmt(R.v)} }`;
+  }
+  if (L) return `{ x | x ${L.inc ? "≥" : ">"} ${nfmt(L.v)} }`;
+  return `{ x | x ${R.inc ? "≤" : "<"} ${nfmt(R.v)} }`;
+}
+
+// 치역 계산: 끝점(또는 무한대에서의 극한)과 꼭짓점 후보 중 최소·최대
+function rRange() {
+  const { type, L, R } = RF;
+  const lim = side => type === "const" ? RF.c : type === "lin" ? Math.sign(RF.a * side) * Infinity : Math.sign(RF.a) * Infinity;
+  const cands = [
+    L ? { v: rF(L.v), inc: L.inc, why: "L" } : { v: lim(-1), inc: false, why: "L∞" },
+    R ? { v: rF(R.v), inc: R.inc, why: "R" } : { v: lim(1), inc: false, why: "R∞" },
+  ];
+  const vIn = type === "quad" && (!L || L.v < RF.p) && (!R || RF.p < R.v);
+  if (vIn) cands.push({ v: RF.q, inc: true, why: "V" });
+  const m = Math.min(...cands.map(c => c.v)), M = Math.max(...cands.map(c => c.v));
+  return {
+    m, M, vIn,
+    mInc: cands.some(c => c.v === m && c.inc),
+    MInc: cands.some(c => c.v === M && c.inc),
+  };
+}
+function rRangeStr(r) {
+  if (r.m === r.M) return `{ ${nfmt(r.m)} }`;
+  const lo = isFinite(r.m), hi = isFinite(r.M);
+  if (!lo && !hi) return "실수 전체";
+  if (!lo) return `{ y | y ${r.MInc ? "≤" : "<"} ${nfmt(r.M)} }`;
+  if (!hi) return `{ y | y ${r.mInc ? "≥" : ">"} ${nfmt(r.m)} }`;
+  return `{ y | ${nfmt(r.m)} ${r.mInc ? "≤" : "<"} y ${r.MInc ? "≤" : "<"} ${nfmt(r.M)} }`;
+}
+function rFormulaStr() {
+  if (RF.type === "lin") return `f(x) = ${fmtPoly(0, RF.a, RF.b)}`;
+  if (RF.type === "const") return `f(x) = ${nfmt(RF.c)}`;
+  const { a, p, q } = RF;
+  const ex = fmtPoly(a, -2 * a * p, a * p * p + q);
+  const coef = a === 1 ? "" : a === -1 ? "−" : (a < 0 ? `−${-a}` : `${a}`);
+  const inner = p === 0 ? "x²" : `(x ${p > 0 ? "−" : "+"} ${Math.abs(p)})²`;
+  const vf = coef + inner + (q === 0 ? "" : q > 0 ? ` + ${q}` : ` − ${-q}`);
+  return ex.replace(/\s/g, "") === vf.replace(/\s/g, "") ? `f(x) = ${ex}` : `f(x) = ${ex} = ${vf}`;
+}
+
+function rExplain(r) {
+  const { type, L, R } = RF;
+  const lines = [];
+  const endLine = (E, name) => E
+    ? `x = ${nfmt(E.v)}${E.inc ? "" : " (미포함)"} → f(${nfmt(E.v)}) = <b>${nfmt(rF(E.v))}</b>${E.inc ? "" : " (미포함 ○)"}`
+    : `${name} 끝이 없으므로 y는 한없이 ${(() => { const s = type === "lin" ? Math.sign(RF.a * (name === "왼쪽" ? -1 : 1)) : Math.sign(RF.a); return s > 0 ? "커짐" : "작아짐"; })()}`;
+  if (type === "const") {
+    lines.push(`모든 x에 대해 f(x) = ${nfmt(RF.c)} → 치역의 원소는 <b>1개</b>`);
+  } else {
+    if (type === "lin") lines.push(RF.a > 0 ? `기울기 ${nfmt(RF.a)} > 0 → x가 커지면 y도 커짐 (증가)` : `기울기 ${nfmt(RF.a)} < 0 → x가 커지면 y는 작아짐 (감소)`);
+    if (type === "quad") {
+      lines.push(`꼭짓점 (${nfmt(RF.p)}, ${nfmt(RF.q)}), ` + (r.vIn
+        ? `x좌표 ${nfmt(RF.p)} ∈ 정의역 → ${RF.a > 0 ? "최솟값" : "최댓값"} <b>${nfmt(RF.q)}</b>`
+        : `x좌표 ${nfmt(RF.p)} ∉ 정의역 → 양 끝값만 비교`));
+    }
+    lines.push("· " + endLine(L, "왼쪽"));
+    lines.push("· " + endLine(R, "오른쪽"));
+  }
+  lines.push(`따라서 치역은 <b>${rRangeStr(r)}</b>,  치역 ⊂ 공역(실수 전체)`);
+  return lines.join("<br>");
+}
+
+function rWindow(r) {
+  const { L, R } = RF;
+  let lo = L ? L.v : (R ? Math.min(R.v - 6, -5) : -5);
+  let hi = R ? R.v : (L ? Math.max(L.v + 6, 5) : 5);
+  if (RF.type === "quad") { lo = Math.min(lo, RF.p - 1); hi = Math.max(hi, RF.p + 1); }
+  const pad = Math.max(1.5, (hi - lo) * 0.2);
+  let x0 = Math.min(lo - pad, -1), x1 = Math.max(hi + pad, 1);
+  // y 범위: 정의역 부분의 함숫값 + 0
+  let ys = [0];
+  for (let i = 0; i <= 200; i++) { const x = x0 + (x1 - x0) * i / 200; if (rIn(x)) ys.push(rF(x)); }
+  if (isFinite(r.m)) ys.push(r.m); if (isFinite(r.M)) ys.push(r.M);
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const yp = Math.max(1.5, (y1 - y0) * 0.15);
+  y0 -= yp; y1 += yp;
+  return { x0, x1, y0, y1 };
+}
+const niceStep = span => { const raw = span / 10; for (const s of [1, 2, 5, 10, 20, 50]) if (raw <= s) return s; return 100; };
+
+function render5() {
+  rReadInputs();
+  $("rDomPrev").textContent = "정의역: " + (rValid() ? rDomainStr() : "비어 있음!");
+  $("rFormula").textContent = rFormulaStr();
+  const svg = $("svg5"); clearSvg(svg);
+  if (!rValid()) {
+    text("정의역이 비어 있어요. 왼쪽 끝 ≤ 오른쪽 끝이 되도록 바꿔 주세요.", 380, 235, { "font-size": 18, fill: BAD }, svg);
+    return;
+  }
+  const r = rRange(), W = rWindow(r);
+  const PX0 = 70, PX1 = 730, PY0 = 25, PY1 = 440;
+  const sx = x => PX0 + (x - W.x0) / (W.x1 - W.x0) * (PX1 - PX0);
+  const sy = y => PY1 - (y - W.y0) / (W.y1 - W.y0) * (PY1 - PY0);
+  const ax = sx(Math.min(Math.max(0, W.x0), W.x1)), ay = sy(Math.min(Math.max(0, W.y0), W.y1));
+
+  // 클립 영역
+  const defs = svg.querySelector("defs");
+  const cp = el("clipPath", { id: "rclip" }, defs);
+  el("rect", { x: PX0, y: PY0, width: PX1 - PX0, height: PY1 - PY0 }, cp);
+
+  // 격자와 눈금
+  const g = el("g", {}, svg);
+  const stx = niceStep(W.x1 - W.x0), sty = niceStep(W.y1 - W.y0);
+  for (let x = Math.ceil(W.x0 / stx) * stx; x <= W.x1; x += stx) {
+    el("line", { x1: sx(x), y1: PY0, x2: sx(x), y2: PY1, stroke: "#eef0f4" }, g);
+    if (x !== 0) text(nfmt(x), sx(x), ay + 14, { "font-size": 12, fill: "#888" }, g);
+  }
+  for (let y = Math.ceil(W.y0 / sty) * sty; y <= W.y1; y += sty) {
+    el("line", { x1: PX0, y1: sy(y), x2: PX1, y2: sy(y), stroke: "#eef0f4" }, g);
+    if (y !== 0) text(nfmt(y), ax - 12, sy(y), { "font-size": 12, fill: "#888", "text-anchor": "end" }, g);
+  }
+  el("line", { x1: PX0, y1: ay, x2: PX1, y2: ay, stroke: "#555", "stroke-width": 1.5, "marker-end": markerFor(svg, "#555") }, svg);
+  el("line", { x1: ax, y1: PY1, x2: ax, y2: PY0, stroke: "#555", "stroke-width": 1.5, "marker-end": markerFor(svg, "#555") }, svg);
+  text("x", PX1 + 14, ay, { "font-size": 18, "font-style": "italic", "font-family": "serif" }, svg);
+  text("y", ax, PY0 - 12, { "font-size": 18, "font-style": "italic", "font-family": "serif" }, svg);
+  text("O", ax - 10, ay + 12, { "font-size": 13, fill: "#555", "font-style": "italic" }, svg);
+
+  // 전체 그래프 (흐리게) + 정의역 부분 (진하게)
+  const N = 300, full = [], part = [];
+  let seg = [];
+  for (let i = 0; i <= N; i++) {
+    const x = W.x0 + (W.x1 - W.x0) * i / N;
+    full.push(`${sx(x)},${sy(rF(x))}`);
+  }
+  // 정의역 부분: 끝점 정확히 포함
+  const dl = RF.L ? RF.L.v : W.x0, dr = RF.R ? RF.R.v : W.x1;
+  for (let i = 0; i <= N; i++) { const x = dl + (dr - dl) * i / N; part.push(`${sx(x)},${sy(rF(x))}`); }
+  el("polyline", { points: full.join(" "), fill: "none", stroke: "#c3c7d0", "stroke-width": 2, "stroke-dasharray": "6 5", "clip-path": "url(#rclip)" }, svg);
+  el("polyline", { points: part.join(" "), fill: "none", stroke: "#1f2430", "stroke-width": 3.5, "clip-path": "url(#rclip)" }, svg);
+
+  // 정의역 띠 (x축)
+  const band = (x1, y1, x2, y2, c) => el("line", { x1, y1, x2, y2, stroke: c, "stroke-width": 9, "stroke-linecap": "butt", opacity: 0.55 }, svg);
+  const dot = (x, y, inc, c, r0 = 6) => el("circle", { cx: x, cy: y, r: r0, fill: inc ? c : "#fff", stroke: c, "stroke-width": 2.5 }, svg);
+  band(sx(dl), ay, sx(dr), ay, "#3b6fd8");
+  if (RF.L) dot(sx(RF.L.v), ay, RF.L.inc, "#3b6fd8");
+  if (RF.R) dot(sx(RF.R.v), ay, RF.R.inc, "#3b6fd8");
+  text("정의역", (sx(dl) + sx(dr)) / 2, ay + 32, { "font-size": 15, fill: "#3b6fd8", "font-weight": 700 }, svg);
+  // 그래프 위 끝점
+  if (RF.L) dot(sx(RF.L.v), sy(rF(RF.L.v)), RF.L.inc, "#1f2430", 5.5);
+  if (RF.R) dot(sx(RF.R.v), sy(rF(RF.R.v)), RF.R.inc, "#1f2430", 5.5);
+
+  // 훑어보기 중 지나간 y값 (초록 띠가 자라남)
+  const clampY = y => Math.min(Math.max(y, W.y0), W.y1);
+  if (rSweepVis) band(ax, sy(clampY(rSweepVis.min)), ax, sy(clampY(rSweepVis.max)), "#2f9e6e");
+
+  // 치역 띠 (y축)
+  if (rRevealed) {
+    const lo = clampY(r.m), hi = clampY(r.M);
+    band(ax, sy(lo), ax, sy(hi), "#2f9e6e");
+    if (isFinite(r.m)) dot(ax, sy(r.m), r.mInc, "#2f9e6e");
+    if (isFinite(r.M) && r.M !== r.m) dot(ax, sy(r.M), r.MInc, "#2f9e6e");
+    const lblY = isFinite(r.M) ? sy(hi) - 18 : (isFinite(r.m) ? sy(lo) + 20 : PY0 + 20);
+    text("치역", ax + (isFinite(r.M) || isFinite(r.m) ? 0 : 28), lblY, { "font-size": 15, fill: "#2f9e6e", "font-weight": 700 }, svg);
+    if (r.vIn) {   // 꼭짓점 표시
+      el("line", { x1: sx(RF.p), y1: sy(RF.q), x2: ax, y2: sy(RF.q), stroke: "#2f9e6e", "stroke-dasharray": "3 4" }, svg);
+      dot(sx(RF.p), sy(RF.q), true, "#2f9e6e", 5);
+    }
+  }
+
+  // x 움직이기
+  if (rXcur !== null) {
+    const x = rXcur, inD = rIn(x);
+    if (inD) {
+      const y = rF(x), X = sx(x), Y = sy(clampY(y));
+      el("line", { x1: X, y1: ay, x2: X, y2: Y, stroke: "#d8763b", "stroke-width": 2, "stroke-dasharray": "5 4" }, svg);
+      el("line", { x1: X, y1: Y, x2: ax, y2: Y, stroke: "#d8763b", "stroke-width": 2, "stroke-dasharray": "5 4", "marker-end": markerFor(svg, "#d8763b") }, svg);
+      el("circle", { cx: X, cy: Y, r: 7, fill: "#d8763b" }, svg);
+      el("circle", { cx: X, cy: ay, r: 5, fill: "#d8763b" }, svg);
+      $("rXv").innerHTML = `x = ${nfmt(x)}  →  f(x) = <span style="color:#d8763b">${nfmt(y)}</span>`;
+    } else {
+      el("line", { x1: sx(x), y1: PY0, x2: sx(x), y2: PY1, stroke: BAD, "stroke-width": 1.5, "stroke-dasharray": "4 4", opacity: 0.6 }, svg);
+      el("circle", { cx: sx(x), cy: ay, r: 5, fill: "#fff", stroke: BAD, "stroke-width": 2 }, svg);
+      $("rXv").innerHTML = `x = ${nfmt(x)}  →  <span style="color:${BAD}">정의역 밖 (대응 없음)</span>`;
+    }
+  } else $("rXv").textContent = "슬라이더를 움직여 보세요";
+
+  // 슬라이더 범위
+  const sl = $("rX");
+  sl.min = W.x0.toFixed(2); sl.max = W.x1.toFixed(2);
+  if (rXcur === null) sl.value = ((dl + dr) / 2).toFixed(2);
+
+  // 정보 띠
+  $("rdD").textContent = rDomainStr();
+  $("rdR").innerHTML = rRevealed ? rRangeStr(r) : `<span style="color:var(--muted)">? (생각해 보기)</span>`;
+  $("rExp").innerHTML = rRevealed ? rExplain(r)
+    : `정의역의 x를 왼쪽 끝부터 오른쪽 끝까지 움직이면 f(x)는 어디부터 어디까지 움직일까요?<br>끝점이 <b>포함(●)</b>인지 <b>미포함(○)</b>인지도 생각해 보세요.`;
+}
+
+function rSweep() {
+  if (!rValid()) return;
+  clearInterval(rAnim);
+  const W = rWindow(rRange());
+  const a = RF.L ? RF.L.v : W.x0, b = RF.R ? RF.R.v : W.x1;
+  const eps = (b - a) * 0.002;
+  const s0 = RF.L && !RF.L.inc ? a + eps : a, s1 = RF.R && !RF.R.inc ? b - eps : b;
+  const T = 2600, t0 = performance.now();
+  rSweepVis = { min: Infinity, max: -Infinity };
+  const step = () => {
+    const t = Math.min(1, (performance.now() - t0) / T);
+    rXcur = s0 + (s1 - s0) * t;
+    const y = rF(rXcur);
+    rSweepVis.min = Math.min(rSweepVis.min, y); rSweepVis.max = Math.max(rSweepVis.max, y);
+    $("rX").value = rXcur;
+    render5();
+    if (t >= 1) { clearInterval(rAnim); rSweepVis = null; rRevealed = true; render5(); }
+  };
+  rAnim = setInterval(step, 30);
+}
+
+function rRandom() {
+  const type = $("rType").value;
+  const pick = arr => arr[rand(arr.length)];
+  if (type === "lin") { $("rA").value = pick([-2, -1, 1, 2, 3]); $("rB").value = rand(7) - 3; }
+  if (type === "quad") { $("rQa").value = pick([1, -1]); $("rQp").value = rand(5) - 2; $("rQq").value = rand(7) - 3; }
+  if (type === "const") { $("rC").value = rand(9) - 4; }
+  const k = Math.random();
+  if (k < 0.7) {           // 유한 구간
+    let l = rand(5) - 3, r = l + 2 + rand(3);
+    if (type === "quad" && Math.random() < 0.6) { const p = +$("rQp").value; l = p - 1 - rand(2); r = p + 1 + rand(2); }
+    $("rLt").value = pick(["le", "le", "lt"]); $("rRt").value = pick(["le", "lt", "lt"]);
+    $("rLv").value = l; $("rRv").value = r;
+  } else if (k < 0.85) {   // 반무한
+    if (rand(2)) { $("rLt").value = pick(["le", "lt"]); $("rLv").value = rand(5) - 2; $("rRt").value = "none"; }
+    else { $("rRt").value = pick(["le", "lt"]); $("rRv").value = rand(5) - 2; $("rLt").value = "none"; }
+  } else { $("rLt").value = "none"; $("rRt").value = "none"; }
+  rNew();
+}
+function rNew() {
+  clearInterval(rAnim); rSweepVis = null; rXcur = null;
+  rRevealed = !$("rHide").checked;
+  render5();
+}
+
+["rType", "rA", "rB", "rQa", "rQp", "rQq", "rC", "rLv", "rLt", "rRt", "rRv"].forEach(id => $(id).addEventListener("input", rNew));
+$("rType").addEventListener("change", rNew);
+$("rHide").addEventListener("change", () => { rRevealed = !$("rHide").checked; render5(); });
+$("rRand").addEventListener("click", rRandom);
+$("rSweep").addEventListener("click", rSweep);
+$("rShow").addEventListener("click", () => { rRevealed = true; render5(); });
+$("rX").addEventListener("input", () => { clearInterval(rAnim); rSweepVis = null; rXcur = +$("rX").value; render5(); });
+
+// ===================================================================
+syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew();
+</script>
+</body>
+</html>
