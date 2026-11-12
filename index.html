@@ -155,13 +155,16 @@
     <button data-tab="t7">④ 일대일대응</button>
     <button data-tab="t2">⑤ 합성함수</button>
     <button data-tab="t3">⑥ 역함수</button>
-    <button data-tab="t4">⑦ 직접 대응</button>
   </nav>
 </header>
 
 <!-- ================= ① 정의역·공역·치역 ================= -->
 <section class="tab on" id="t1">
   <div class="left card">
+    <div class="seg">
+      <button class="sub1 on" data-sub="t1">❶ 함수<br>살펴보기</button>
+      <button class="sub1" data-sub="t4">❷ 직접<br>대응시키기</button>
+    </div>
     <h2>설정</h2>
     <div class="field">
       <label>정의역 X의 원소 개수 <b id="nXv">4</b></label>
@@ -473,6 +476,10 @@
 <!-- ================= ④ 직접 대응시키기 ================= -->
 <section class="tab" id="t4">
   <div class="left card">
+    <div class="seg">
+      <button class="sub1" data-sub="t1">❶ 함수<br>살펴보기</button>
+      <button class="sub1 on" data-sub="t4">❷ 직접<br>대응시키기</button>
+    </div>
     <h2>설정</h2>
     <div class="field">
       <label>함수 종류</label>
@@ -604,13 +611,22 @@ function table(rows) {
   return rows.map(r => "<tr><th>" + r[0] + "</th>" + r.slice(1).map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
 
+// ① 탭은 두 모드: t1 (함수 살펴보기), t4 (직접 대응시키기)
+let t1Sub = "t1";
+function showSection(id) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === id));
+  document.querySelectorAll(".sub1").forEach(btn => btn.classList.toggle("on", btn.dataset.sub === id));
+  if (id === "t1") render1();
+  if (id === "t4") render4();
+}
+document.querySelectorAll(".sub1").forEach(btn => btn.addEventListener("click", () => { t1Sub = btn.dataset.sub; showSection(t1Sub); }));
+
 document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === b.dataset.tab));
-  if (b.dataset.tab === "t1") render1();
+  const id = b.dataset.tab === "t1" ? t1Sub : b.dataset.tab;
+  showSection(id);
   if (b.dataset.tab === "t2") renderComp(true);
   if (b.dataset.tab === "t3") renderInv(true);
-  if (b.dataset.tab === "t4") render4();
   if (b.dataset.tab === "t5") render5();
   if (b.dataset.tab === "t6") renderG();
   if (b.dataset.tab === "t7") renderO(true);
