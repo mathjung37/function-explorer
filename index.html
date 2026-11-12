@@ -108,7 +108,8 @@
   .prev { font-size: 17px; font-weight: 700; color: var(--x); margin: 2px 0 6px; }
   .xslider { display: flex; gap: 10px; align-items: center; flex: none; padding: 2px 12px 0; font-size: 16px; }
   .xslider input { flex: 1; height: 22px; }
-  .xslider span { min-width: 260px; font-weight: 700; }
+  .xslider > span { min-width: 260px; font-weight: 700; }
+  #oQ > span { min-width: 0; }
   .bigset { font-size: 22px; font-weight: 700; }
 
   /* ---- ③ 함수의 그래프 ---- */
@@ -119,6 +120,9 @@
   .btn:disabled { opacity: .4; cursor: not-allowed; filter: none; }
   .lat { cursor: pointer; }
   .lat:hover { fill: #3b6fd8; fill-opacity: .3; }
+  .qbtn2 { padding: 8px 16px; border-radius: 999px; border: 2px solid var(--line); background: #fff; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .qbtn2.sel { background: var(--x); color: #fff; border-color: var(--x); }
+  .qbtn2:disabled { cursor: default; }
   .pairset { font-size: 19px; font-weight: 700; color: #6b3fd8; word-break: keep-all; }
 
   .arrow { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw .6s ease forwards; }
@@ -146,11 +150,12 @@
   </div>
   <nav>
     <button data-tab="t1" class="on">① 정의역 · 공역 · 치역</button>
-    <button data-tab="t5">② 정의역이 실수일 때</button>
+    <button data-tab="t5">② 실수 정의역</button>
     <button data-tab="t6">③ 함수의 그래프</button>
-    <button data-tab="t2">④ 합성함수</button>
-    <button data-tab="t3">⑤ 역함수</button>
-    <button data-tab="t4">⑥ 직접 대응시키기</button>
+    <button data-tab="t7">④ 일대일대응</button>
+    <button data-tab="t2">⑤ 합성함수</button>
+    <button data-tab="t3">⑥ 역함수</button>
+    <button data-tab="t4">⑦ 직접 대응</button>
   </nav>
 </header>
 
@@ -419,6 +424,52 @@
   </div>
 </section>
 
+<!-- ================= ④ 일대일함수와 일대일대응 ================= -->
+<section class="tab" id="t7">
+  <div class="left card">
+    <div class="seg">
+      <button id="oModeA" class="on">❶ 화살표로<br>판별하기</button>
+      <button id="oModeB">❷ 그래프로<br>판별하기</button>
+    </div>
+    <div class="note" style="margin-top:0;line-height:1.6">
+      <b style="color:var(--x)">일대일함수</b><br>
+      정의역의 임의의 두 원소 x₁, x₂에 대하여<br>
+      <b>x₁ ≠ x₂ 이면 f(x₁) ≠ f(x₂)</b><br>
+      → 서로 다른 x는 서로 다른 y로 (화살표가 한 곳에 모이지 않음)<br><br>
+      <b style="color:var(--range)">일대일대응</b><br>
+      (ⅰ) 일대일함수이다.<br>
+      (ⅱ) 치역이 공역과 같다.<br>
+      → Y의 모든 원소가 화살표를 <u>정확히 1개</u>씩 받음<br><br>
+      <span style="font-size:13px">※ 일대일대응은 일대일함수이지만, 일대일함수라고 모두 일대일대응은 아닙니다.</span>
+    </div>
+    <div id="oLeftA">
+      <button class="btn primary" id="oNew">새 함수</button>
+      <button class="btn ghost" id="oShow">정답 보기</button>
+    </div>
+    <div id="oLeftB" style="display:none">
+      <div class="progress" id="oBprog" style="margin:10px 0 2px"></div>
+      <button class="btn secondary" id="oB1">일대일대응</button>
+      <button class="btn" id="oB2" style="background:var(--x);color:#fff">일대일함수 (일대일대응은 아님)</button>
+      <button class="btn" id="oB3" style="background:var(--bad);color:#fff">일대일함수가 아님</button>
+      <button class="btn ghost" id="oBnext">다음 그래프 ▶</button>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage">
+      <div class="formula" id="oTitle"></div>
+      <div class="svgbox"><svg id="svg7" viewBox="0 0 760 470"></svg></div>
+      <div class="xslider" id="oQ" style="justify-content:center;gap:14px"></div>
+      <div class="xslider" id="oSlider" style="display:none">가로선 y = b <input type="range" id="oBy" min="-4" max="4" step="0.1" value="1"> <span id="oByv"></span></div>
+    </div>
+    <div class="card info c3">
+      <div class="box" id="oI1"></div>
+      <div class="box" id="oI2"></div>
+      <div class="box note" id="oI3"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ================= ④ 직접 대응시키기 ================= -->
 <section class="tab" id="t4">
   <div class="left card">
@@ -562,6 +613,7 @@ document.querySelectorAll("nav button").forEach(b => b.addEventListener("click",
   if (b.dataset.tab === "t4") render4();
   if (b.dataset.tab === "t5") render5();
   if (b.dataset.tab === "t6") renderG();
+  if (b.dataset.tab === "t7") renderO(true);
 }));
 
 // ===================================================================
@@ -1457,9 +1509,9 @@ function gFeed(html) { $("gI3").innerHTML = html; }
 function gBoxA() {
   const xs = gP.X, xmin = Math.min(...xs), xmax = Math.max(...xs);
   const x0 = Math.min(-1, xmin - 1), x1 = xmax + 1.5;
+  // y 범위는 찍을 점 기준 (넓힌 그래프가 위로 넘치면 잘라서 보여 줌)
   const ys = [0, ...xs.map(gP.F)];
-  for (let i = 0; i <= 40; i++) ys.push(gP.F(xmin + (x1 - xmin) * i / 40));
-  return { x0, x1, y0: Math.min(...ys) - 1, y1: Math.max(...ys) + 1 };
+  return { x0, x1, y0: Math.min(...ys) - 1.5, y1: Math.max(...ys) + 1.5 };
 }
 
 function gPick(x, y) {
@@ -1558,7 +1610,7 @@ function renderGA() {
   const cnt = gP.X.filter(x => gFound[x] !== undefined).length;
   $("gAprog").innerHTML = `찾은 점 <b>${cnt} / ${gP.X.length}</b>  ·  틀린 횟수 <b class="${gMist ? "ng" : ""}">${gMist}</b>`;
   $("gAext").disabled = !gDone() || gExt >= 0;
-  $("gI1").innerHTML = `<div class="k">대응표</div>` + table([["x", ...gP.X], ["f(x)", ...gP.X.map(x => gFound[x] ?? "?")]]);
+  $("gI1").innerHTML = `<div class="k">대응표</div><table>` + table([["x", ...gP.X], ["f(x)", ...gP.X.map(x => gFound[x] ?? "?")]]) + `</table>`;
   const pairs = gP.X.map(x => gFound[x] !== undefined ? `(${x}, ${gFound[x]})` : `(${x}, ?)`).join(", ");
   $("gI2").innerHTML = gExt >= 0
     ? `<div class="k">정의역이 ${extDom}일 때 함수 f의 그래프</div><div class="pairset">{ (x, f(x)) | x ≥ ${xmin} }</div><div style="margin-top:6px;font-size:15px;color:var(--muted)">정의역의 원소가 무수히 많으므로 순서쌍도 무수히 많습니다.</div>`
@@ -1632,7 +1684,7 @@ function renderGB() {
   const a = gAx, ys = gYs(it, a), X = sx(a);
   const inf = ys === "inf";
   el("line", { x1: X, y1: 30, x2: X, y2: 460, stroke: inf ? BAD : "#2f9e6e", "stroke-width": inf ? 6 : 3, opacity: inf ? 0.6 : 0.85 }, svg);
-  text(`x = ${nfmt(a)}`, X, 18, { "font-size": 16, fill: "#2f9e6e", "font-weight": 700 }, svg);
+  text(`x = ${nfmt(a)}`, X + 8, 445, { "font-size": 16, fill: "#2f9e6e", "font-weight": 700, "text-anchor": "start" }, svg);
   if (!inf) ys.forEach(y => el("circle", { cx: X, cy: sy(y), r: 9, fill: ys.length > 1 ? BAD : "#2f9e6e", stroke: "#fff", "stroke-width": 2.5 }, svg));
 
   const n = inf ? "무수히 많음" : `${ys.length}개`;
@@ -1665,7 +1717,205 @@ $("gBnext").addEventListener("click", () => gNextB(false));
 $("gAx").addEventListener("input", () => { gAx = Math.round(+$("gAx").value * 10) / 10; renderG(); });
 
 // ===================================================================
-syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew(); gNewProblem();
+// ④ 일대일함수와 일대일대응 (교과서 111쪽)
+// ===================================================================
+let oMode = "A";
+let oX = [], oY = [], oF = {}, oAns = { q1: null, q2: null }, oReveal = false;
+
+function oNewFunc() {
+  const kind = sample(["bij", "inj", "no", "no"], 1)[0];
+  const n = 3 + rand(2);
+  oX = makeElements(n, "num");
+  if (kind === "bij") {
+    oY = makeElements(n, "alpha");
+    const ys = shuffle(oY); oF = Object.fromEntries(oX.map((x, i) => [x, ys[i]]));
+  } else if (kind === "inj") {
+    oY = makeElements(n + 1, "alpha");
+    const ys = sample(oY, n); oF = Object.fromEntries(oX.map((x, i) => [x, ys[i]]));
+  } else {
+    oY = makeElements(n - rand(2), "alpha");     // n 또는 n−1개
+    do { oF = randomFunc(oX, oY); } while (uniq(Object.values(oF)).length === n);
+  }
+  oAns = { q1: null, q2: null }; oReveal = false;
+  renderO(true);
+}
+function oTruth() {
+  const vals = oX.map(x => oF[x]), R = uniq(vals);
+  const inj = R.length === oX.length, onto = R.length === oY.length;
+  const pre = Object.fromEntries(oY.map(y => [y, oX.filter(x => oF[x] === y)]));
+  return { inj, onto, bij: inj && onto, R, pre,
+    coll: oY.filter(y => pre[y].length > 1), unhit: oY.filter(y => pre[y].length === 0) };
+}
+function oAnswer(q, v) {
+  if (oReveal || oAns[q] !== null) return;
+  oAns[q] = v;
+  if (oAns.q1 !== null && oAns.q2 !== null) oReveal = true;
+  renderO(false);
+}
+
+function renderOA(anim) {
+  const T = oTruth();
+  const svg = $("svg7"); clearSvg(svg);
+  const cy = 235, cxX = 200, cxY = 560;
+  drawSet(svg, { cx: cxX, cy, rx: 120, ry: 185, c: SETC.X, name: "X", sub: "정의역" });
+  drawSet(svg, { cx: cxY, cy, rx: 120, ry: 185, c: SETC.Y, name: "Y", sub: "공역" });
+  text("f", 380, 40, { "font-size": 26, "font-style": "italic", "font-family": "serif", fill: "#444" }, svg);
+  const pX = column(oX, cxX - 10, cy, 290), pY = column(oY, cxY + 10, cy, 290);
+  oX.forEach((x, i) => {
+    const bad = oReveal && T.coll.includes(oF[x]);
+    drawArrow(svg, pX[x], pY[oF[x]], bad ? BAD : COLORS[i % 7], { anim, delay: i * 0.12, w: bad ? 3.4 : 2.6 });
+  });
+  oX.forEach((x, i) => drawNode(svg, pX[x], x, COLORS[i % 7]));
+  oY.forEach(y => {
+    if (oReveal && T.coll.includes(y)) {
+      drawNode(svg, pY[y], y, BAD, { w: 4 });
+      text("화살표가 모임!", pY[y].x + 28, pY[y].y, { "font-size": 14, fill: BAD, "font-weight": 700, "text-anchor": "start" }, svg);
+    } else if (oReveal && T.unhit.includes(y)) {
+      drawNode(svg, pY[y], y, BAD, { w: 2.5, dash: "4 3", fill: "#fdecec" });
+      text("치역에 없음", pY[y].x + 28, pY[y].y, { "font-size": 14, fill: BAD, "font-weight": 700, "text-anchor": "start" }, svg);
+    } else drawNode(svg, pY[y], y, oReveal ? "#2f9e6e" : SETC.Y.stroke, { w: 2.5 });
+  });
+  $("oTitle").innerHTML = `f : X → Y<small>화살표를 보고 판별해 보세요</small>`;
+
+  // 질문 버튼
+  const qb = (q, v, label) => {
+    const sel = oAns[q] === v;
+    return `<button class="qbtn2 ${sel ? "sel" : ""}" data-q="${q}" data-v="${v}" ${oReveal || oAns[q] !== null ? "disabled" : ""}>${label}</button>`;
+  };
+  const mark = (q, truth) => oReveal ? (oAns[q] === truth ? `<span class="ok">✔</span>` : `<span class="ng">✘</span>`) : "";
+  $("oQ").innerHTML =
+    `<b>Q1.</b> 일대일함수인가? ${qb("q1", true, "예")} ${qb("q1", false, "아니오")} ${mark("q1", T.inj)}` +
+    `<i style="display:inline-block;width:40px"></i>` +
+    `<b>Q2.</b> 일대일대응인가? ${qb("q2", true, "예")} ${qb("q2", false, "아니오")} ${mark("q2", T.bij)}`;
+  $("oQ").querySelectorAll("button").forEach(b => b.addEventListener("click", () => oAnswer(b.dataset.q, b.dataset.v === "true")));
+
+  // 정보 띠
+  $("oI1").innerHTML = `<div class="k">정의역 X</div><div class="v">${setStr(oX)}</div>` +
+    `<div class="k">공역 Y</div><div class="v">${setStr(oY)}</div>` +
+    `<div class="k">치역 f(X)</div><div class="v" style="color:var(--range)">${oReveal ? setStr(T.R) : "?"}</div>`;
+  const chk = (ok, txt) => `<div style="font-size:16px;margin-top:4px">${oReveal ? (ok ? "✅" : "❌") : "⬜"} ${txt}</div>`;
+  $("oI2").innerHTML = `<div class="k">판별 순서</div>` +
+    chk(T.inj, "① 서로 다른 x가 모두 서로 다른 y로 가는가? → 일대일함수") +
+    chk(T.onto, "② 치역 = 공역인가? (Y의 모든 원소가 화살표를 받는가?)") +
+    chk(T.bij, "①과 ②를 모두 만족 → 일대일대응");
+  if (!oReveal) {
+    $("oI3").innerHTML = `Q1, Q2에 모두 답하면 정답과 이유가 나옵니다.`;
+    $("oI3").className = "box note";
+  } else {
+    let h = "";
+    if (T.inj) h += `<b>Q1.</b> 서로 다른 x는 모두 서로 다른 y로 갑니다 → <b>일대일함수</b>입니다.<br>`;
+    else { const y = T.coll[0], [a, b] = T.pre[y]; h += `<b>Q1.</b> ${a} ≠ ${b}이지만 f(${a}) = f(${b}) = ${y} → <b>일대일함수가 아닙니다</b>.<br>`; }
+    if (T.bij) h += `<b>Q2.</b> 일대일함수이고 치역 = 공역 → <b>일대일대응</b>입니다.`;
+    else if (!T.inj) h += `<b>Q2.</b> 일대일함수가 아니므로 <b>일대일대응이 아닙니다</b>.` + (T.onto ? ` (치역 = 공역이어도 마찬가지!)` : "");
+    else h += `<b>Q2.</b> 일대일함수이지만 ${setStr(T.unhit)}에 대응하는 x가 없어 치역 ≠ 공역 → <b>일대일대응이 아닙니다</b>.`;
+    const allOk = oAns.q1 === T.inj && oAns.q2 === T.bij;
+    $("oI3").className = "box note " + (allOk ? "good" : "bad");
+    $("oI3").innerHTML = (allOk ? `<b>🎉 모두 정답!</b><br>` : "") + h;
+  }
+}
+
+// ---------- ❷ 그래프로 판별하기 (가로선) ----------
+const cbrt = Math.cbrt;
+const O_ITEMS = [
+  { name: "f(x) = 2x", kind: "bij", fx: x => 2 * x, xs: b => [b / 2],
+    why: "모든 실수 b에 대하여 가로선 y = b와 <b>정확히 한 점</b>에서 만나요 → 일대일함수이고 치역 = 공역(실수 전체) → <b>일대일대응</b>" },
+  { name: "g(x) = x²", kind: "no", witness: 1, fx: x => x * x, xs: b => b > 1e-9 ? [sq(b), -sq(b)] : Math.abs(b) < 1e-9 ? [0] : [],
+    why: "y = 1과 두 점에서 만나요: −1 ≠ 1이지만 g(−1) = g(1) = 1 → <b>일대일함수가 아님</b>" },
+  { name: "y = x + 1", kind: "bij", fx: x => x + 1, xs: b => [b - 1],
+    why: "모든 가로선과 <b>정확히 한 점</b>에서 만나요 → <b>일대일대응</b>" },
+  { name: "y = |x|", kind: "no", witness: 2, fx: Math.abs, xs: b => b > 1e-9 ? [b, -b] : Math.abs(b) < 1e-9 ? [0] : [],
+    why: "y = 2와 두 점 (−2, 2), (2, 2)에서 만나요 → <b>일대일함수가 아님</b>" },
+  { name: "y = x²  (정의역 {x | x ≥ 0}, 공역 실수 전체)", kind: "inj", witness: -1, fx: x => x * x, dom: [0, Infinity],
+    xs: b => b >= -1e-9 ? [sq(Math.max(b, 0))] : [],
+    why: "모든 가로선과 많아야 한 점에서 만나므로 <b>일대일함수</b>.<br>하지만 y = −1처럼 만나지 않는 가로선이 있어 치역 {y | y ≥ 0} ≠ 공역 → <b>일대일대응은 아님</b>" },
+  { name: "y = x² (x ≥ 0),  y = x (x < 0)", kind: "bij", piece: true,
+    fx: x => x >= 0 ? x * x : x, xs: b => b >= 0 ? [sq(b)] : [b],
+    why: "모든 실수 b에 대하여 가로선 y = b와 <b>정확히 한 점</b>에서 만나요 → <b>일대일대응</b>" },
+  { name: "y = 3  (상수함수)", kind: "no", witness: 3, fx: () => 3, xs: b => Math.abs(b - 3) < 1e-9 ? "inf" : [],
+    why: "y = 3과 무수히 많은 점에서 만나요 → <b>일대일함수가 아님</b>" },
+  { name: "y = ¼x³", kind: "bij", fx: x => x ** 3 / 4, xs: b => [cbrt(4 * b)],
+    why: "모든 가로선과 <b>정확히 한 점</b>에서 만나요 → <b>일대일대응</b>" },
+  { name: "y = −½x + 1", kind: "bij", fx: x => -x / 2 + 1, xs: b => [2 * (1 - b)],
+    why: "기울기가 0이 아닌 직선은 모든 가로선과 <b>정확히 한 점</b>에서 만나요 → <b>일대일대응</b>" },
+];
+const O_KIND = { bij: "일대일대응", inj: "일대일함수 (일대일대응은 아님)", no: "일대일함수가 아님" };
+let oOrder = [], oBi = 0, oBy = 1, oBAns = null, oScore = { right: 0, done: 0 };
+
+function oStartB() { oOrder = shuffle(O_ITEMS.map((_, i) => i)); oBi = 0; oScore = { right: 0, done: 0 }; oNextB(true); }
+function oNextB(first) {
+  if (!first) oBi = (oBi + 1) % oOrder.length;
+  oBAns = null; oBy = 1; $("oBy").value = oBy;
+  renderO(false);
+}
+function oAnswerB(k) {
+  if (oBAns) return;
+  const it = O_ITEMS[oOrder[oBi]];
+  oBAns = { k, ok: k === it.kind }; oScore.done++; if (oBAns.ok) oScore.right++;
+  if (it.witness !== undefined) { oBy = it.witness; $("oBy").value = oBy; }
+  renderO(false);
+}
+
+function renderOB() {
+  const it = O_ITEMS[oOrder[oBi]];
+  const svg = $("svg7"); clearSvg(svg);
+  const P = drawPlane(svg, { x0: -4, x1: 4, y0: -4, y1: 4 }, { L: 165, R: 595, T: 30, B: 460 });
+  const { sx, sy } = P;
+  $("oTitle").innerHTML = `${it.name}<small>그래프 ${oBi + 1} / ${oOrder.length}</small>`;
+  // 그래프
+  const lo = it.dom ? it.dom[0] : -4.5, hi = 4.5;
+  const seg = (a, b) => { const pts = []; for (let i = 0; i <= 300; i++) { const x = a + (b - a) * i / 300; pts.push(`${sx(x)},${sy(it.fx(x))}`); } return pts.join(" "); };
+  if (it.piece) {
+    el("polyline", { points: seg(-4.5, -0.0001), fill: "none", stroke: "#1f2430", "stroke-width": 3.5, "clip-path": P.clip }, svg);
+    el("polyline", { points: seg(0, 4.5), fill: "none", stroke: "#1f2430", "stroke-width": 3.5, "clip-path": P.clip }, svg);
+  } else el("polyline", { points: seg(lo, hi), fill: "none", stroke: "#1f2430", "stroke-width": 3.5, "clip-path": P.clip }, svg);
+  if (it.dom) el("circle", { cx: sx(it.dom[0]), cy: sy(it.fx(it.dom[0])), r: 6, fill: "#1f2430" }, svg);
+
+  // 가로선 y = b
+  const b = oBy, xs = it.xs(b), Y = sy(b), inf = xs === "inf";
+  const cnt = inf ? Infinity : xs.length;
+  const col = cnt === 1 ? "#2f9e6e" : BAD;
+  el("line", { x1: 165, y1: Y, x2: 595, y2: Y, stroke: col, "stroke-width": inf ? 6 : 3, opacity: inf ? 0.6 : 0.85 }, svg);
+  text(`y = ${nfmt(b)}`, 640, Y, { "font-size": 16, fill: col, "font-weight": 700 }, svg);
+  if (!inf) xs.forEach(x => el("circle", { cx: sx(x), cy: Y, r: 9, fill: col, stroke: "#fff", "stroke-width": 2.5, "clip-path": P.clip }, svg));
+
+  const n = inf ? "무수히 많음" : `${cnt}개`;
+  $("oByv").innerHTML = cnt === 0 ? `<span style="color:${BAD}">만나는 점 없음 → 이 b는 치역에 없음</span>`
+    : `만나는 점 <span style="color:${col}">${n}</span>` + (!inf && cnt ? " (x = " + xs.map(x => nfmt(Math.round(x * 100) / 100)).join(", ") + ")" : "");
+  $("oI1").innerHTML = `<div class="k">가로선 y = ${nfmt(b)}과 만나는 점</div><div class="bigset" style="color:${col}">${n}</div>` +
+    `<div style="font-size:14px;color:var(--muted);margin-top:4px">${cnt >= 2 ? "같은 y에 x가 여러 개 → 일대일 아님" : cnt === 0 ? "공역의 원소 b가 치역에 없음" : "한 점에서 만남"}</div>`;
+  $("oI2").innerHTML = `<div class="k">가로선으로 판별하기</div>` +
+    `• 모든 가로선과 <b>많아야 한 점</b>에서 만남 → <b>일대일함수</b><br>` +
+    `• 공역의 모든 b에 대하여 가로선 y = b와 <b>정확히 한 점</b>에서 만남 → <b>일대일대응</b>`;
+  $("oBprog").innerHTML = `맞힌 개수 <b>${oScore.right} / ${oScore.done}</b>`;
+  ["oB1", "oB2", "oB3"].forEach(id => $(id).disabled = !!oBAns);
+  if (!oBAns) { $("oI3").className = "box note"; $("oI3").innerHTML = `가로선 y = b를 위아래로 움직여 그래프와 몇 점에서 만나는지 살펴본 뒤, 왼쪽에서 답을 고르세요.`; }
+  else {
+    $("oI3").className = "box note " + (oBAns.ok ? "good" : "bad");
+    $("oI3").innerHTML = `<b>${oBAns.ok ? "✔ 정답!" : "✘ 아쉬워요."}</b> 정답: <b>${O_KIND[it.kind]}</b><br>${it.why}`;
+  }
+}
+
+function renderO(anim) {
+  $("oLeftA").style.display = oMode === "A" ? "" : "none";
+  $("oLeftB").style.display = oMode === "B" ? "" : "none";
+  $("oQ").style.display = oMode === "A" ? "" : "none";
+  $("oSlider").style.display = oMode === "B" ? "" : "none";
+  $("oModeA").classList.toggle("on", oMode === "A");
+  $("oModeB").classList.toggle("on", oMode === "B");
+  oMode === "A" ? renderOA(anim) : renderOB();
+}
+$("oModeA").addEventListener("click", () => { oMode = "A"; renderO(false); });
+$("oModeB").addEventListener("click", () => { oMode = "B"; if (!oOrder.length) oStartB(); else renderO(false); });
+$("oNew").addEventListener("click", oNewFunc);
+$("oShow").addEventListener("click", () => { const T = oTruth(); if (oAns.q1 === null) oAns.q1 = T.inj; if (oAns.q2 === null) oAns.q2 = T.bij; oReveal = true; renderO(false); });
+$("oB1").addEventListener("click", () => oAnswerB("bij"));
+$("oB2").addEventListener("click", () => oAnswerB("inj"));
+$("oB3").addEventListener("click", () => oAnswerB("no"));
+$("oBnext").addEventListener("click", () => oNextB(false));
+$("oBy").addEventListener("input", () => { oBy = Math.round(+$("oBy").value * 10) / 10; renderO(false); });
+
+// ===================================================================
+syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew(); gNewProblem(); oNewFunc();
 </script>
 </body>
 </html>
