@@ -162,8 +162,8 @@
 <section class="tab on" id="t1">
   <div class="left card">
     <div class="seg">
-      <button class="sub1 on" data-sub="t1">❶ 함수<br>살펴보기</button>
-      <button class="sub1" data-sub="t4">❷ 직접<br>대응시키기</button>
+      <button class="sub1 on" data-main="t1" data-sub="t1">❶ 함수<br>살펴보기</button>
+      <button class="sub1" data-main="t1" data-sub="t4">❷ 직접<br>대응시키기</button>
     </div>
     <h2>설정</h2>
     <div class="field">
@@ -226,6 +226,10 @@
 <!-- ================= ② 합성함수 ================= -->
 <section class="tab" id="t2">
   <div class="left card">
+    <div class="seg">
+      <button class="sub1 on" data-main="t2" data-sub="t2">❶ 화살표로<br>보기</button>
+      <button class="sub1" data-main="t2" data-sub="t8">❷ 교과서<br>문제 풀기</button>
+    </div>
     <h2>설정</h2>
     <div class="field">
       <label>X의 원소 개수 <b id="cXv">3</b></label>
@@ -273,6 +277,38 @@
         <div class="k">g∘f의 치역 (g∘f)(X)</div><div class="v" id="cdGFR" style="color:var(--range)"></div>
       </div>
       <div class="box note" id="cNote"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ⑤-❷ 합성함수 교과서 문제 풀기 ================= -->
+<section class="tab" id="t8">
+  <div class="left card">
+    <div class="seg">
+      <button class="sub1" data-main="t2" data-sub="t2">❶ 화살표로<br>보기</button>
+      <button class="sub1 on" data-main="t2" data-sub="t8">❷ 교과서<br>문제 풀기</button>
+    </div>
+    <h2>문제 고르기</h2>
+    <div id="tbList"></div>
+    <div class="note">
+      <b>합성함수의 함숫값</b><br>
+      <b>(g∘f)(a) = g(f(a))</b><br>
+      ① <span style="color:#d8763b">f(x)에 x = a 대입</span><br>
+      ② <span style="color:#8a4fd8">g(x)에 x = f(a) 대입</span><br>
+      → <u>안쪽(오른쪽) 함수부터</u> 계산합니다.
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card stage">
+      <div class="formula" id="tbTitle"></div>
+      <div style="text-align:center;font-size:20px;color:var(--muted);flex:none" id="tbGiven"></div>
+      <div class="svgbox"><svg id="svg8" viewBox="0 0 960 300"></svg></div>
+      <div class="xslider" style="justify-content:center;gap:12px" id="tbCtrl"></div>
+    </div>
+    <div class="card info c2" style="grid-template-columns:1.6fr 1fr">
+      <div class="box" id="tbSteps" style="font-size:19px;line-height:1.75"></div>
+      <div class="box note" id="tbNote"></div>
     </div>
   </div>
 </section>
@@ -477,8 +513,8 @@
 <section class="tab" id="t4">
   <div class="left card">
     <div class="seg">
-      <button class="sub1" data-sub="t1">❶ 함수<br>살펴보기</button>
-      <button class="sub1 on" data-sub="t4">❷ 직접<br>대응시키기</button>
+      <button class="sub1" data-main="t1" data-sub="t1">❶ 함수<br>살펴보기</button>
+      <button class="sub1 on" data-main="t1" data-sub="t4">❷ 직접<br>대응시키기</button>
     </div>
     <h2>설정</h2>
     <div class="field">
@@ -611,21 +647,23 @@ function table(rows) {
   return rows.map(r => "<tr><th>" + r[0] + "</th>" + r.slice(1).map(c => `<td>${c}</td>`).join("") + "</tr>").join("");
 }
 
-// ① 탭은 두 모드: t1 (함수 살펴보기), t4 (직접 대응시키기)
-let t1Sub = "t1";
+// 두 모드가 있는 탭: ① (t1 살펴보기 / t4 직접 대응), ⑤ (t2 화살표 / t8 교과서 문제)
+const subOf = { t1: "t1", t2: "t2" };
 function showSection(id) {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === id));
   document.querySelectorAll(".sub1").forEach(btn => btn.classList.toggle("on", btn.dataset.sub === id));
   if (id === "t1") render1();
   if (id === "t4") render4();
+  if (id === "t2") renderComp(true);
+  if (id === "t8") render8();
 }
-document.querySelectorAll(".sub1").forEach(btn => btn.addEventListener("click", () => { t1Sub = btn.dataset.sub; showSection(t1Sub); }));
+document.querySelectorAll(".sub1").forEach(btn => btn.addEventListener("click", () => {
+  subOf[btn.dataset.main] = btn.dataset.sub; showSection(btn.dataset.sub);
+}));
 
 document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => {
   document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
-  const id = b.dataset.tab === "t1" ? t1Sub : b.dataset.tab;
-  showSection(id);
-  if (b.dataset.tab === "t2") renderComp(true);
+  showSection(subOf[b.dataset.tab] || b.dataset.tab);
   if (b.dataset.tab === "t3") renderInv(true);
   if (b.dataset.tab === "t5") render5();
   if (b.dataset.tab === "t6") renderG();
@@ -1929,6 +1967,165 @@ $("oB2").addEventListener("click", () => oAnswerB("inj"));
 $("oB3").addEventListener("click", () => oAnswerB("no"));
 $("oBnext").addEventListener("click", () => oNextB(false));
 $("oBy").addEventListener("input", () => { oBy = Math.round(+$("oBy").value * 10) / 10; renderO(false); });
+
+// ===================================================================
+// ⑤-❷ 합성함수 교과서 문제 풀기 (교과서 114~115쪽)
+// ===================================================================
+const OR = "#d8763b", PU = "#8a4fd8";
+const TB = [
+  { group: "합성함수의 함숫값 (114쪽 예)", label: "(g∘f)(1)",
+    given: "f(x) = x + 6,   g(x) = 2x − 1", q: "(g∘f)(1)", outAt: 2, ans: "13",
+    chain: ["1", ["f", "f(x) = x + 6", OR], "7", ["g", "g(x) = 2x − 1", PU], "13"],
+    steps: ["(g∘f)(1) = g(f(1)) → <u>안쪽의 f(1)부터</u> 계산합니다.",
+      `① <span style="color:${OR}">f(x)에 x = 1 대입</span>: f(1) = 1 + 6 = <b>7</b>`,
+      `② <span style="color:${PU}">g(x)에 x = f(1) = 7 대입</span>: g(7) = 2 × 7 − 1 = <b>13</b>`,
+      "따라서 (g∘f)(1) = g(f(1)) = g(7) = <b>13</b>"],
+    note: "합성함수의 함숫값은 <b>오른쪽(안쪽) 함수부터</b> 차례로 대입합니다.<br>(g∘f)(1)에서는 f가 먼저, g가 나중입니다." },
+
+  { group: "문제 1   f(x) = x² − 1,  g(x) = −2x + 1", label: "(1) (g∘f)(2)",
+    given: "f(x) = x² − 1,   g(x) = −2x + 1", q: "(g∘f)(2)", outAt: 2, ans: "-5",
+    chain: ["2", ["f", "f(x) = x² − 1", OR], "3", ["g", "g(x) = −2x + 1", PU], "−5"],
+    steps: ["(g∘f)(2) = g(f(2)) → 안쪽의 f(2)부터!",
+      `① <span style="color:${OR}">f(2)</span> = 2² − 1 = <b>3</b>`,
+      `② <span style="color:${PU}">g(3)</span> = −2 × 3 + 1 = <b>−5</b>`,
+      "따라서 (g∘f)(2) = g(3) = <b>−5</b>"],
+    note: "f(2)를 먼저 구하고, 그 값 3을 g에 넣습니다." },
+  { group: null, label: "(2) (f∘g)(−1)",
+    given: "f(x) = x² − 1,   g(x) = −2x + 1", q: "(f∘g)(−1)", outAt: 2, ans: "8",
+    chain: ["−1", ["g", "g(x) = −2x + 1", PU], "3", ["f", "f(x) = x² − 1", OR], "8"],
+    steps: ["(f∘g)(−1) = f(g(−1)) → 이번에는 <u>g가 안쪽</u>이므로 g(−1)부터!",
+      `① <span style="color:${PU}">g(−1)</span> = −2 × (−1) + 1 = 2 + 1 = <b>3</b>`,
+      `② <span style="color:${OR}">f(3)</span> = 3² − 1 = <b>8</b>`,
+      "따라서 (f∘g)(−1) = f(3) = <b>8</b>"],
+    note: "f∘g는 <b>g를 먼저</b>, f를 나중에 적용합니다.<br>음수를 대입할 때는 괄호를 꼭 씌우세요: −2 × <b>(−1)</b>" },
+  { group: null, label: "(3) (f∘f)(1)",
+    given: "f(x) = x² − 1", q: "(f∘f)(1)", outAt: 2, ans: "-1",
+    chain: ["1", ["f", "f(x) = x² − 1", OR], "0", ["f", "f(x) = x² − 1", OR], "−1"],
+    steps: ["(f∘f)(1) = f(f(1)) → 같은 함수 f를 <u>두 번</u> 적용합니다.",
+      `① <span style="color:${OR}">f(1)</span> = 1² − 1 = <b>0</b>`,
+      `② <span style="color:${OR}">f(0)</span> = 0² − 1 = <b>−1</b>`,
+      "따라서 (f∘f)(1) = f(0) = <b>−1</b>"],
+    note: "자기 자신과도 합성할 수 있습니다. f(1)의 결과를 다시 f에 넣으면 됩니다." },
+
+  { group: "교환법칙 (114쪽)   f(x) = −x + 3,  g(x) = 3x − 2", label: "(g∘f)(x)",
+    given: "f(x) = −x + 3,   g(x) = 3x − 2", q: "(g∘f)(x)", outAt: 3,
+    chain: ["x", ["f", "f(x) = −x + 3", OR], "−x + 3", ["g", "g(x) = 3x − 2", PU], "−3x + 7"],
+    steps: ["(g∘f)(x) = g(f(x)) → x 대신 <u>식</u>을 넣습니다.",
+      `① 안쪽: <span style="color:${OR}">f(x) = −x + 3</span>`,
+      `② <span style="color:${PU}">g(x)의 x 자리에 (−x + 3)을 대입</span>: g(−x + 3) = 3(−x + 3) − 2`,
+      "= −3x + 9 − 2 = <b>−3x + 7</b>"],
+    note: "식을 대입할 때는 <b>괄호째로</b> 넣습니다.<br>g(□) = 3□ − 2 에서 □ = (−x + 3)" },
+  { group: null, label: "(f∘g)(x)",
+    given: "f(x) = −x + 3,   g(x) = 3x − 2", q: "(f∘g)(x)", outAt: 3,
+    chain: ["x", ["g", "g(x) = 3x − 2", PU], "3x − 2", ["f", "f(x) = −x + 3", OR], "−3x + 5"],
+    steps: ["(f∘g)(x) = f(g(x)) → 이번에는 g가 안쪽입니다.",
+      `① 안쪽: <span style="color:${PU}">g(x) = 3x − 2</span>`,
+      `② <span style="color:${OR}">f(x)의 x 자리에 (3x − 2)를 대입</span>: f(3x − 2) = −(3x − 2) + 3`,
+      "= −3x + 2 + 3 = <b>−3x + 5</b>"],
+    note: "(g∘f)(x) = −3x + <b>7</b>,  (f∘g)(x) = −3x + <b>5</b><br>→ <b>g∘f ≠ f∘g</b><br>함수의 합성에서는 <u>교환법칙이 성립하지 않습니다</u>." },
+
+  { group: "문제 2 (115쪽)   f(x) = 2x + 5,  g(x) = −x² + 1", label: "(1) (g∘f)(x)",
+    given: "f(x) = 2x + 5,   g(x) = −x² + 1", q: "(g∘f)(x)", outAt: 3,
+    chain: ["x", ["f", "f(x) = 2x + 5", OR], "2x + 5", ["g", "g(x) = −x² + 1", PU], "−4x² − 20x − 24"],
+    steps: ["(g∘f)(x) = g(f(x)) = g(2x + 5)",
+      `① 안쪽: <span style="color:${OR}">f(x) = 2x + 5</span>`,
+      `② <span style="color:${PU}">g(x)의 x 자리에 (2x + 5)를 대입</span>: g(2x + 5) = −(2x + 5)² + 1`,
+      "= −(4x² + 20x + 25) + 1 = <b>−4x² − 20x − 24</b>"],
+    note: "−(2x + 5)²은 <b>제곱을 먼저</b> 전개한 뒤 −를 곱합니다.<br>(2x + 5)² = 4x² + 20x + 25" },
+  { group: null, label: "(2) (f∘g)(x)",
+    given: "f(x) = 2x + 5,   g(x) = −x² + 1", q: "(f∘g)(x)", outAt: 3,
+    chain: ["x", ["g", "g(x) = −x² + 1", PU], "−x² + 1", ["f", "f(x) = 2x + 5", OR], "−2x² + 7"],
+    steps: ["(f∘g)(x) = f(g(x)) = f(−x² + 1)",
+      `① 안쪽: <span style="color:${PU}">g(x) = −x² + 1</span>`,
+      `② <span style="color:${OR}">f(x)의 x 자리에 (−x² + 1)을 대입</span>: f(−x² + 1) = 2(−x² + 1) + 5`,
+      "= −2x² + 2 + 5 = <b>−2x² + 7</b>"],
+    note: "(1)의 (g∘f)(x) = −4x² − 20x − 24 와 비교해 보세요.<br>→ 여기서도 <b>g∘f ≠ f∘g</b>" },
+  { group: null, label: "(3) (f∘f)(x)",
+    given: "f(x) = 2x + 5", q: "(f∘f)(x)", outAt: 3,
+    chain: ["x", ["f", "f(x) = 2x + 5", OR], "2x + 5", ["f", "f(x) = 2x + 5", OR], "4x + 15"],
+    steps: ["(f∘f)(x) = f(f(x)) = f(2x + 5)",
+      `① 안쪽: <span style="color:${OR}">f(x) = 2x + 5</span>`,
+      `② <span style="color:${OR}">f(x)의 x 자리에 (2x + 5)를 대입</span>: f(2x + 5) = 2(2x + 5) + 5`,
+      "= 4x + 10 + 5 = <b>4x + 15</b>"],
+    note: "확인: x = 0이면 f(0) = 5, f(5) = 15 → 4 × 0 + 15 = 15 ✔" },
+];
+let tbI = 0, tbS = 0, tbMsg = "";
+
+function tbSelect(i) { tbI = i; tbS = 0; tbMsg = ""; render8(); }
+function tbCheck() {
+  const it = TB[tbI], v = ($("tbIn").value || "").replace(/\s/g, "").replace(/−/g, "-");
+  if (v === it.ans) { tbS = it.steps.length - 1; tbMsg = `<span class="ok"><b>✔ 정답!</b></span>`; }
+  else tbMsg = `<span class="ng"><b>✘ 다시 생각해 보세요.</b> 힌트: 안쪽 함수부터 계산!</span>`;
+  render8();
+}
+
+function draw8(it, s) {
+  const svg = $("svg8"); clearSvg(svg);
+  const midAt = 1, outAt = it.outAt;
+  const fsz = 22;
+  // 너비 계산
+  const W = it.chain.map(c => Array.isArray(c) ? Math.max(150, c[1].length * 12 + 34) : Math.max(70, c.length * 13 + 30));
+  const gap = 38, total = W.reduce((a, b) => a + b, 0) + gap * 4;
+  let x = (960 - total) / 2;
+  const cy = 150, pos = [];
+  W.forEach(w => { pos.push([x, w]); x += w + gap; });
+  // 화살표
+  for (let i = 0; i < 4; i++) {
+    const x1 = pos[i][0] + pos[i][1] + 3, x2 = pos[i + 1][0] - 4;
+    const lit = (i < 2 && s >= midAt) || (i >= 2 && s >= outAt);
+    el("line", { x1, y1: cy, x2, y2: cy, stroke: lit ? "#444" : "#ccc", "stroke-width": 3, "marker-end": markerFor(svg, lit ? "#444" : "#ccc") }, svg);
+  }
+  it.chain.forEach((c, i) => {
+    const [x0, w] = pos[i];
+    if (Array.isArray(c)) {           // 함수 상자
+      const active = (i === 1 && s === midAt) || (i === 3 && s >= outAt - (outAt === 3 ? 1 : 0) && s <= outAt);
+      el("rect", { x: x0, y: cy - 62, width: w, height: 124, rx: 16, fill: active ? c[2] : "#fff", stroke: c[2], "stroke-width": 3, opacity: 1 }, svg);
+      text(c[0], x0 + w / 2, cy - 22, { "font-size": 40, "font-style": "italic", "font-family": "serif", "font-weight": 700, fill: active ? "#fff" : c[2] }, svg);
+      text(c[1], x0 + w / 2, cy + 30, { "font-size": 17, "font-weight": 700, fill: active ? "#fff" : "#333" }, svg);
+      text(i === 1 ? "① 먼저 (안쪽)" : "② 나중 (바깥쪽)", x0 + w / 2, cy + 86, { "font-size": 16, fill: c[2], "font-weight": 700 }, svg);
+    } else {                          // 값 / 식
+      const shown = i === 0 || (i === 2 && s >= midAt) || (i === 4 && s >= outAt);
+      const final = i === 4 && shown;
+      el("rect", { x: x0, y: cy - 30, width: w, height: 60, rx: 30, fill: final ? "#e3f4ec" : "#fff", stroke: final ? "#2f9e6e" : "#999", "stroke-width": final ? 3 : 2 }, svg);
+      text(shown ? c : "?", x0 + w / 2, cy, { "font-size": fsz, "font-weight": 700, fill: shown ? (final ? "#1d7a52" : "#1f2430") : "#bbb" }, svg);
+    }
+  });
+  text("입력  →  ① 안쪽 함수  →  ② 바깥쪽 함수  →  결과", 480, 34, { "font-size": 17, fill: "#888" }, svg);
+}
+
+function render8() {
+  // 문제 목록
+  let h = "";
+  TB.forEach((it, i) => {
+    if (it.group) h += `<div class="subhead" style="margin:10px 0 4px">${it.group}</div>`;
+    h += `<button class="qbtn2 ${i === tbI ? "sel" : ""}" data-i="${i}" style="margin:2px 4px 2px 0">${it.label}</button>`;
+  });
+  $("tbList").innerHTML = h;
+  $("tbList").querySelectorAll("button").forEach(b => b.addEventListener("click", () => tbSelect(+b.dataset.i)));
+
+  const it = TB[tbI];
+  $("tbTitle").innerHTML = `${it.q} = ?`;
+  $("tbGiven").textContent = it.given;
+  draw8(it, tbS);
+
+  // 단계 풀이
+  $("tbSteps").innerHTML = `<div class="k">단계별 풀이 (${tbS + 1} / ${it.steps.length})</div>` +
+    it.steps.map((t, k) => k <= tbS ? `<div>${t}</div>` : `<div style="color:#ccc">· · ·</div>`).join("");
+  $("tbNote").innerHTML = `<b>💡 포인트</b><br>${it.note}`;
+
+  // 조작 버튼
+  const last = tbS >= it.steps.length - 1;
+  let c = `<button class="btn ghost qbtn" id="tbPrev" ${tbS === 0 ? "disabled" : ""}>◀ 이전</button>` +
+    `<button class="btn primary qbtn" id="tbNext" ${last ? "disabled" : ""}>다음 단계 ▶</button>` +
+    `<button class="btn ghost qbtn" id="tbAll" ${last ? "disabled" : ""}>전체 풀이 보기</button>`;
+  if (it.ans !== undefined) c += `<span style="margin-left:18px">답 입력</span><input id="tbIn" type="text" inputmode="numeric" style="width:80px;font-size:18px;padding:6px;border-radius:8px;border:1px solid var(--line);text-align:center"><button class="btn secondary qbtn" id="tbChk">확인</button>`;
+  c += `<span>${tbMsg}</span>`;
+  $("tbCtrl").innerHTML = c;
+  $("tbPrev").onclick = () => { tbS = Math.max(0, tbS - 1); render8(); };
+  $("tbNext").onclick = () => { tbS = Math.min(it.steps.length - 1, tbS + 1); render8(); };
+  $("tbAll").onclick = () => { tbS = it.steps.length - 1; render8(); };
+  if ($("tbChk")) { $("tbChk").onclick = tbCheck; $("tbIn").onkeydown = e => { if (e.key === "Enter") tbCheck(); }; }
+}
 
 // ===================================================================
 syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew(); gNewProblem(); oNewFunc();
