@@ -2257,16 +2257,38 @@ function mathify(root) {
     n.parentNode.replaceChild(frag, n);
   });
 }
-// SVG 안의 수식: foreignObject 안에 HTML로 넣으면 위의 mathify가 조판
-function svgMath(str, x, y, { size = 18, color = "#1f2430", anchor = "middle", w = 420, parent } = {}) {
-  const h = size * 2.4;
-  const fx = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x;
-  const fo = el("foreignObject", { x: fx, y: y - h / 2, width: w, height: h, "pointer-events": "none" }, parent);
-  const d = document.createElement("div");
-  d.style.cssText = `pointer-events:none;width:100%;height:100%;display:flex;align-items:center;justify-content:${anchor === "middle" ? "center" : anchor === "end" ? "flex-end" : "flex-start"};font-size:${size}px;color:${color};white-space:nowrap`;
-  d.textContent = str;
-  fo.appendChild(d);
-  return fo;
+// SVG 안의 수식: SVG 글자(<text>)에 KaTeX 수식 글꼴을 입혀서 그림
+//  (아이패드 Safari·Chrome에서 foreignObject 위치가 어긋나는 문제를 피하려고 SVG 글자만 사용)
+//  문자 → 기울임 수학 글꼴(KaTeX_Math), 숫자·기호 → KaTeX_Main, 위첨자(², ³, ⁻¹)는 작게 올려서
+function svgMath(str, x, y, { size = 18, color = "#1f2430", anchor = "middle", parent } = {}) {
+  const F_MATH = "KaTeX_Math, 'Times New Roman', serif", F_MAIN = "KaTeX_Main, 'Times New Roman', serif";
+  const t = el("text", { x, y, "text-anchor": anchor, "dominant-baseline": "central", "font-size": size, fill: color, "pointer-events": "none" }, parent);
+  const s = String(str).replace(/⁻¹/g, "\u0001");   // 위첨자 −1 표시용 임시 기호
+  // 글자 종류별로 묶기
+  const kind = ch => /[A-Za-z]/.test(ch) ? "ital" : /[²³\u0001]/.test(ch) ? "sup" : /[0-9\s()+\-−=,.:?|{}<>≤≥≠∈∉∘×÷⊂→∞]/.test(ch) ? "main" : "kor";
+  const runs = [];
+  for (const ch of s) {
+    const k = kind(ch);
+    if (k !== "sup" && runs.length && runs[runs.length - 1].k === k) runs[runs.length - 1].s += ch;
+    else runs.push({ k, s: ch });
+  }
+  let raised = false;
+  runs.forEach(r => {
+    const ts = el("tspan", {}, t);
+    if (r.k === "sup") {
+      ts.textContent = r.s === "²" ? "2" : r.s === "³" ? "3" : "−1";
+      ts.setAttribute("font-family", F_MAIN);
+      ts.setAttribute("font-size", Math.round(size * 0.68));
+      ts.setAttribute("dy", (raised ? 0 : -size * 0.42).toFixed(1));
+      raised = true;
+      return;
+    }
+    if (raised) { ts.setAttribute("dy", (size * 0.42).toFixed(1)); raised = false; }
+    ts.textContent = r.k === "main" ? r.s.replace(/-/g, "−") : r.s;
+    if (r.k === "ital") { ts.setAttribute("font-family", F_MATH); ts.setAttribute("font-style", "italic"); }
+    else if (r.k === "main") ts.setAttribute("font-family", F_MAIN);
+  });
+  return t;
 }
 // 설정 칸 접기 / 펴기 (태블릿에서 그림을 크게 보기)
 $("leftToggle").addEventListener("click", () => {
