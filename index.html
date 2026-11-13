@@ -160,16 +160,27 @@
   .tbBar { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: relative; z-index: 4; }
   .tbBar .qbtn { margin: 0; }
   .tbBar .sep { width: 1px; height: 28px; background: var(--line); margin: 0 4px; }
-  .tbBar .inkTools { margin-left: auto; display: flex; gap: 6px; align-items: center; background: #fff; border-radius: 12px; padding: 2px; }
-  .inkBtn { border: 2px solid var(--line); background: #fff; border-radius: 10px; height: 38px; min-width: 38px; padding: 0 10px; font-size: 15px; font-family: inherit; font-weight: 700; cursor: pointer; }
-  .inkBtn.on { border-color: var(--x); background: #e9f0fd; }
-  .inkDot { width: 30px; height: 30px; min-width: 30px; padding: 0; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); cursor: pointer; }
-  .inkDot.on { box-shadow: 0 0 0 3px var(--x); }
-  #tbInk { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; touch-action: none; border-radius: 14px; }
-  #tbRight.inking #tbInk { pointer-events: auto; cursor: crosshair; }
-  #tbRight.inking .tbStage { outline: 3px dashed #9bb7ee; outline-offset: -3px; }
   @keyframes pulseBox { 0%, 100% { stroke-width: 3; } 50% { stroke-width: 6; } }
   .boxPulse { animation: pulseBox 1.4s ease-in-out infinite; }
+  /* ---- 필기 (모든 화면) ---- */
+  #inkLayer { position: absolute; left: 0; top: 0; z-index: 40; pointer-events: none; touch-action: none; }
+  body.inking #inkLayer { pointer-events: auto; cursor: crosshair; }
+  /* 필기 중에는 글자 선택·길게 누르기 메뉴·확대 돋보기를 막음 (아이패드) */
+  body.inking, body.inking * { -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
+  body.inking main, body.inking .tab.on { outline: none; }
+  body.inking::after { content: ""; position: fixed; inset: 0; border: 4px dashed rgba(59,111,216,.45); pointer-events: none; z-index: 45; }
+  #inkBar { position: fixed; right: 14px; bottom: 14px; z-index: 60; display: flex; align-items: center; gap: 6px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
+  #inkMain { width: 46px; height: 46px; border-radius: 50%; border: none; background: var(--x); color: #fff; font-size: 21px; cursor: pointer; flex: none; }
+  body.inking #inkMain { background: #4b5563; }
+  #inkTools { display: none; align-items: center; gap: 6px; padding-right: 6px; }
+  body.inking #inkTools { display: flex; }
+  .inkSep { width: 1px; height: 28px; background: var(--line); margin: 0 2px; }
+  .inkDot { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); cursor: pointer; padding: 0; }
+  .inkHl { width: 34px; height: 24px; border-radius: 6px; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); cursor: pointer; padding: 0; opacity: .85; }
+  .inkDot.on, .inkHl.on { box-shadow: 0 0 0 3px var(--x); }
+  .inkBtn { border: 2px solid var(--line); background: #fff; border-radius: 999px; height: 36px; min-width: 36px; padding: 0 12px; font-size: 14px; font-family: inherit; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .inkBtn.on { border-color: var(--x); background: #e9f0fd; }
+  .inkLabel { font-size: 12px; color: var(--muted); font-weight: 700; }
   /* ---- 설정 칸 접기 ---- */
   #leftToggle { flex: none; width: 42px; height: 42px; border-radius: 10px; border: 2px solid var(--line); background: #fff; font-size: 20px; cursor: pointer; align-self: center; }
   #leftToggle:hover { background: #eef0f5; }
@@ -243,8 +254,6 @@
     .tbCard .lab { font-size: 12.5px; }
     .fchip { font-size: 14px; padding: 3px 10px; }
     .tbTip { font-size: 13px; padding: 5px 10px; }
-    .inkBtn { height: 34px; min-width: 34px; font-size: 13px; padding: 0 8px; }
-    .inkDot { width: 26px; height: 26px; min-width: 26px; }
   }
   @media (max-width: 1000px) { .tbCards { grid-template-columns: 1fr 1fr; } .tbGiven { margin-left: 0; } }
 </style>
@@ -422,7 +431,6 @@
       <div class="tbTip" id="tbNote"></div>
       <div class="tbBar" id="tbCtrl"></div>
     </div>
-    <canvas id="tbInk" aria-label="필기 영역"></canvas>
   </div>
 </section>
 
@@ -2290,91 +2298,13 @@ function render8() {
     `<button class="btn ghost qbtn" id="tbAll" ${last ? "disabled" : ""}>전체 풀이</button>`;
   if (it.ans !== undefined) c += `<span class="sep"></span><span>답</span><input id="tbIn" type="text" inputmode="numeric" style="width:80px;font-size:18px;padding:6px;border-radius:8px;border:1px solid var(--line);text-align:center"><button class="btn secondary qbtn" id="tbChk">확인</button>`;
   c += `<span>${tbMsg}</span>`;
-  c += `<span class="inkTools">` + inkToolsHtml() + `</span>`;
   $("tbCtrl").innerHTML = c;
   $("tbPrev").onclick = () => { tbS = Math.max(0, tbS - 1); render8(); };
   $("tbNext").onclick = () => { tbS = Math.min(it.steps.length - 1, tbS + 1); render8(); };
   $("tbAll").onclick = () => { tbS = it.steps.length - 1; render8(); };
   if ($("tbChk")) { $("tbChk").onclick = tbCheck; $("tbIn").onkeydown = e => { if (e.key === "Enter") tbCheck(); }; }
-  bindInkTools();
 }
 
-// ===================================================================
-// 필기 (펜으로 화면 위에 계산하기) — Apple Pencil 필압 반영, 펜 사용 중 손바닥 무시
-// ===================================================================
-const INK_COLORS = [["#1f2430", "검정"], ["#d63b3b", "빨강"], ["#3b6fd8", "파랑"]];
-const ink = { on: false, tool: "pen", color: INK_COLORS[0][0], strokes: {}, cur: null, penSeen: false };
-const inkList = () => (ink.strokes[tbI] = ink.strokes[tbI] || []);
-
-function inkToolsHtml() {
-  let h = `<button class="inkBtn ${ink.on ? "on" : ""}" id="inkToggle">✏️ 필기 ${ink.on ? "끄기" : "켜기"}</button>`;
-  if (ink.on) {
-    h += INK_COLORS.map(([c, n]) => `<button class="inkDot ${ink.tool === "pen" && ink.color === c ? "on" : ""}" data-c="${c}" title="${n} 펜" style="background:${c}"></button>`).join("");
-    h += `<button class="inkBtn ${ink.tool === "eraser" ? "on" : ""}" id="inkEraser" title="지우개">지우개</button>`;
-    h += `<button class="inkBtn" id="inkUndo" title="한 획 되돌리기">↶</button>`;
-    h += `<button class="inkBtn" id="inkClear" title="전체 지우기">전체 지우기</button>`;
-  }
-  return h;
-}
-function bindInkTools() {
-  $("inkToggle").onclick = () => { ink.on = !ink.on; $("tbRight").classList.toggle("inking", ink.on); render8(); };
-  if (!ink.on) return;
-  document.querySelectorAll(".inkDot").forEach(b => b.onclick = () => { ink.tool = "pen"; ink.color = b.dataset.c; render8(); });
-  $("inkEraser").onclick = () => { ink.tool = "eraser"; render8(); };
-  $("inkUndo").onclick = () => { inkList().pop(); inkRedraw(); };
-  $("inkClear").onclick = () => { ink.strokes[tbI] = []; inkRedraw(); };
-}
-function inkCanvas() {
-  const cv = $("tbInk"), box = $("tbRight").getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-  const w = Math.round(box.width * dpr), h = Math.round(box.height * dpr);
-  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
-  return { cv, ctx: cv.getContext("2d"), W: box.width, H: box.height, dpr };
-}
-function inkStroke(ctx, st, W, H, dpr, from = 1) {
-  ctx.save();
-  ctx.scale(dpr, dpr);
-  ctx.globalCompositeOperation = st.er ? "destination-out" : "source-over";
-  ctx.strokeStyle = st.c; ctx.lineCap = "round"; ctx.lineJoin = "round";
-  const p = st.p;
-  if (p.length === 1) { ctx.fillStyle = st.c; ctx.beginPath(); ctx.arc(p[0][0] * W, p[0][1] * H, st.w / 2, 0, 7); ctx.fill(); }
-  for (let i = Math.max(1, from); i < p.length; i++) {
-    ctx.lineWidth = st.er ? st.w : st.w * (0.55 + p[i][2]);
-    ctx.beginPath(); ctx.moveTo(p[i - 1][0] * W, p[i - 1][1] * H); ctx.lineTo(p[i][0] * W, p[i][1] * H); ctx.stroke();
-  }
-  ctx.restore();
-}
-function inkRedraw() {
-  const { cv, ctx, W, H, dpr } = inkCanvas();
-  ctx.clearRect(0, 0, cv.width, cv.height);
-  inkList().forEach(st => inkStroke(ctx, st, W, H, dpr));
-}
-(function setupInk() {
-  const cv = $("tbInk");
-  const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, e.pressure && e.pointerType === "pen" ? e.pressure : 0.5]; };
-  cv.addEventListener("pointerdown", e => {
-    if (!ink.on) return;
-    if (e.pointerType === "pen") ink.penSeen = true;
-    if (e.pointerType === "touch" && ink.penSeen) return;      // 펜을 쓰는 중이면 손바닥 터치는 무시
-    e.preventDefault();
-    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
-    ink.cur = { c: ink.color, w: ink.tool === "eraser" ? 28 : 3.2, er: ink.tool === "eraser", p: [pt(e)], id: e.pointerId };
-    inkList().push(ink.cur);
-    const { ctx, W, H, dpr } = inkCanvas(); inkStroke(ctx, ink.cur, W, H, dpr);
-  });
-  cv.addEventListener("pointermove", e => {
-    if (!ink.cur || e.pointerId !== ink.cur.id) return;
-    e.preventDefault();
-    let evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
-    if (!evs.length) evs = [e];
-    const n0 = ink.cur.p.length;
-    evs.forEach(ev => ink.cur.p.push(pt(ev)));
-    const { ctx, W, H, dpr } = inkCanvas(); inkStroke(ctx, ink.cur, W, H, dpr, n0);
-  });
-  const end = e => { if (ink.cur && e.pointerId === ink.cur.id) ink.cur = null; };
-  cv.addEventListener("pointerup", end);
-  cv.addEventListener("pointercancel", end);
-  if (window.ResizeObserver) new ResizeObserver(() => inkRedraw()).observe($("tbRight"));
-})();
 
 // ===================================================================
 syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew(); gNewProblem(); oNewFunc();
@@ -2489,6 +2419,152 @@ document.addEventListener("DOMContentLoaded", () => {
   mathify(document.body);
   new MutationObserver(scheduleMath).observe(document.body, { childList: true, subtree: true, characterData: true });
 });
+</script>
+<!-- ================= 필기 (모든 화면 공통) ================= -->
+<canvas id="inkLayer" aria-label="필기 영역"></canvas>
+<div id="inkBar">
+  <div id="inkTools">
+    <span class="inkLabel">펜</span>
+    <button class="inkDot" data-tool="pen" data-c="#1f2430" title="검정 펜" style="background:#1f2430"></button>
+    <button class="inkDot" data-tool="pen" data-c="#d63b3b" title="빨강 펜" style="background:#d63b3b"></button>
+    <button class="inkDot" data-tool="pen" data-c="#3b6fd8" title="파랑 펜" style="background:#3b6fd8"></button>
+    <span class="inkSep"></span>
+    <span class="inkLabel">형광펜</span>
+    <button class="inkHl" data-tool="hl" data-c="#ffd400" title="노랑 형광펜" style="background:#ffd400"></button>
+    <button class="inkHl" data-tool="hl" data-c="#3ddc84" title="초록 형광펜" style="background:#3ddc84"></button>
+    <button class="inkHl" data-tool="hl" data-c="#ff6fb5" title="분홍 형광펜" style="background:#ff6fb5"></button>
+    <span class="inkSep"></span>
+    <button class="inkBtn" data-tool="eraser" title="지우개">지우개</button>
+    <button class="inkBtn" id="inkUndo" title="한 획 되돌리기">↶</button>
+    <button class="inkBtn" id="inkClear" title="이 화면의 필기 모두 지우기">전체 지우기</button>
+  </div>
+  <button id="inkMain" title="필기 켜기">✏️</button>
+</div>
+
+<script>
+// ===================================================================
+// 필기 — 모든 화면 위에 펜·형광펜으로 쓰기
+//  · Apple Pencil 필압 반영, 펜을 쓰는 동안 손바닥 터치는 무시
+//  · 필기는 화면(탭·모드·교과서 문제)마다 따로 저장
+// ===================================================================
+const ink = { on: false, tool: "pen", color: "#1f2430", strokes: {}, cur: null, penSeen: false, key: "" };
+
+// 지금 보고 있는 화면의 이름 (필기를 화면마다 따로 저장하기 위해)
+function inkKey() {
+  const id = (document.querySelector(".tab.on") || {}).id || "";
+  if (id === "t8") return "t8:" + tbI;
+  if (id === "t6") return "t6:" + gMode;
+  if (id === "t7") return "t7:" + oMode;
+  return id;
+}
+const inkList = () => (ink.strokes[ink.key] = ink.strokes[ink.key] || []);
+
+// 필기 층의 위치·크기: 머리줄 아래부터 문서 끝까지 (세로 화면에서 스크롤해도 내용과 함께 움직임)
+function inkCanvas() {
+  const cv = $("inkLayer");
+  const top = document.querySelector("header").getBoundingClientRect().bottom + window.scrollY;
+  const W = document.documentElement.clientWidth;
+  const H = Math.max(document.documentElement.scrollHeight, window.innerHeight) - top;
+  const dpr = window.devicePixelRatio || 1;
+  if (cv.style.top !== top + "px") cv.style.top = top + "px";
+  cv.style.width = W + "px"; cv.style.height = H + "px";
+  const w = Math.round(W * dpr), h = Math.round(H * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  return { cv, ctx: cv.getContext("2d"), W, H, dpr };
+}
+function inkDraw(ctx, st, W, H, dpr) {
+  const p = st.p;
+  ctx.save();
+  ctx.scale(dpr, dpr);
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  if (st.t === "eraser") ctx.globalCompositeOperation = "destination-out";
+  if (st.t === "hl") {                       // 형광펜: 한 번에 그려야 겹친 곳이 진해지지 않음
+    ctx.globalAlpha = 0.38; ctx.strokeStyle = st.c; ctx.lineWidth = st.w;
+    ctx.beginPath(); ctx.moveTo(p[0][0] * W, p[0][1] * H);
+    p.forEach(q => ctx.lineTo(q[0] * W, q[1] * H));
+    if (p.length === 1) ctx.lineTo(p[0][0] * W + 0.1, p[0][1] * H);
+    ctx.stroke();
+  } else {
+    ctx.strokeStyle = st.c;
+    if (p.length === 1) { ctx.fillStyle = st.c; ctx.beginPath(); ctx.arc(p[0][0] * W, p[0][1] * H, st.w / 2, 0, 7); ctx.fill(); }
+    for (let i = 1; i < p.length; i++) {
+      ctx.lineWidth = st.t === "eraser" ? st.w : st.w * (0.55 + p[i][2]);
+      ctx.beginPath(); ctx.moveTo(p[i - 1][0] * W, p[i - 1][1] * H); ctx.lineTo(p[i][0] * W, p[i][1] * H); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+function inkRedraw() {
+  ink.key = inkKey();
+  const { cv, ctx, W, H, dpr } = inkCanvas();
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  inkList().forEach(st => inkDraw(ctx, st, W, H, dpr));
+}
+// 펜 끝을 따라 이어 그리기 (펜·지우개는 마지막 구간만, 형광펜은 전체를 다시)
+function inkDrawLive() {
+  if (ink.cur.t === "hl") return inkRedraw();
+  const { ctx, W, H, dpr } = inkCanvas();
+  const p = ink.cur.p, n = p.length;
+  inkDraw(ctx, { ...ink.cur, p: n > 1 ? p.slice(n - 2) : p }, W, H, dpr);
+}
+
+function inkSetOn(on) {
+  ink.on = on;
+  document.body.classList.toggle("inking", on);
+  $("inkMain").textContent = on ? "✕" : "✏️";
+  $("inkMain").title = on ? "필기 끄기 (쓴 내용은 남음)" : "필기 켜기";
+  if (on) { try { window.getSelection().removeAllRanges(); } catch (_) {} inkRedraw(); }
+}
+function inkSyncTools() {
+  document.querySelectorAll("#inkTools [data-tool]").forEach(b =>
+    b.classList.toggle("on", b.dataset.tool === ink.tool && (ink.tool === "eraser" || b.dataset.c === ink.color)));
+}
+
+(function setupInk() {
+  const cv = $("inkLayer");
+  $("inkMain").addEventListener("click", () => inkSetOn(!ink.on));
+  document.querySelectorAll("#inkTools [data-tool]").forEach(b => b.addEventListener("click", () => {
+    ink.tool = b.dataset.tool; if (b.dataset.c) ink.color = b.dataset.c; inkSyncTools();
+  }));
+  $("inkUndo").addEventListener("click", () => { inkList().pop(); inkRedraw(); });
+  $("inkClear").addEventListener("click", () => { ink.strokes[ink.key] = []; inkRedraw(); });
+  inkSyncTools();
+
+  const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, e.pointerType === "pen" && e.pressure ? e.pressure : 0.5]; };
+  cv.addEventListener("pointerdown", e => {
+    if (!ink.on) return;
+    if (e.pointerType === "pen") ink.penSeen = true;
+    if (e.pointerType === "touch" && ink.penSeen) return;          // 펜 사용 중 손바닥은 무시
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    ink.key = inkKey();
+    const w = ink.tool === "eraser" ? 30 : ink.tool === "hl" ? 22 : 3.2;
+    ink.cur = { t: ink.tool, c: ink.color, w, p: [pt(e)], id: e.pointerId };
+    inkList().push(ink.cur);
+    inkDrawLive();
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!ink.cur || e.pointerId !== ink.cur.id) return;
+    e.preventDefault();
+    let evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    if (!evs.length) evs = [e];
+    evs.forEach(ev => { ink.cur.p.push(pt(ev)); if (ink.cur.t !== "hl") inkDrawLive(); });
+    if (ink.cur.t === "hl") inkDrawLive();
+  });
+  const end = e => { if (ink.cur && e.pointerId === ink.cur.id) ink.cur = null; };
+  cv.addEventListener("pointerup", end);
+  cv.addEventListener("pointercancel", end);
+  // 아이패드: 필기 중 터치로 글자 선택·스크롤·돋보기가 생기지 않게
+  ["touchstart", "touchmove"].forEach(t => cv.addEventListener(t, e => { if (ink.on) e.preventDefault(); }, { passive: false }));
+  document.addEventListener("selectstart", e => { if (ink.on) e.preventDefault(); });
+  document.addEventListener("contextmenu", e => { if (ink.on && e.target === cv) e.preventDefault(); });
+
+  // 화면(탭·모드·문제)이 바뀌거나 크기가 바뀌면 그 화면의 필기로 다시 그림
+  setInterval(() => { if (inkKey() !== ink.key && !ink.cur) inkRedraw(); }, 250);
+  window.addEventListener("resize", () => inkRedraw());
+  if (window.ResizeObserver) new ResizeObserver(() => { if (!ink.cur) inkRedraw(); }).observe(document.body);
+  inkRedraw();
+})();
 </script>
 </body>
 </html>
