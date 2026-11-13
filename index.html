@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>함수 탐구 · 공통수학2</title>
+<!-- 수식 조판: KaTeX (LaTeX) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <style>
   :root {
     --bg: #f6f7fb; --card: #fff; --ink: #1f2430; --muted: #6b7280;
@@ -35,11 +38,11 @@
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
   .card h2 { margin: 0 0 12px; font-size: 19px; }
   .field { margin-bottom: 12px; }
-  .field label { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 4px; }
-  .field label b { font-size: 20px; color: var(--x); }
+  .field label { display: block; font-size: 16px; margin-bottom: 4px; }
+  .field label b { font-size: 20px; color: var(--x); float: right; }
   .field input[type=range] { width: 100%; height: 22px; }
-  .check { display: flex; gap: 8px; align-items: center; font-size: 16px; margin-bottom: 12px; cursor: pointer; }
-  .check input { width: 20px; height: 20px; }
+  .check { display: block; font-size: 16px; margin-bottom: 12px; cursor: pointer; }
+  .check input { width: 20px; height: 20px; vertical-align: -4px; margin-right: 6px; }
   select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--line); font-family: inherit; font-size: 15px; }
   .hint { font-size: 13px; color: var(--muted); margin-top: 2px; }
   .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 8px; font-family: inherit; }
@@ -64,7 +67,7 @@
   .svgbox { flex: 1; min-height: 0; position: relative; }
   .svgbox svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .legend { display: flex; gap: 18px; justify-content: center; font-size: 15px; color: var(--muted); flex: none; flex-wrap: wrap; }
-  .legend span::before { content: ""; display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; background: var(--c); }
+  .legend > span::before { content: ""; display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -2px; background: var(--c); }
 
   /* ---- 결과 띠 (그림 아래) ---- */
   .info { flex: none; display: grid; gap: 12px; padding: 12px; }
@@ -107,9 +110,8 @@
   .inrow .lbl { width: 78px; color: var(--muted); font-size: 14px; }
   .prev { font-size: 17px; font-weight: 700; color: var(--x); margin: 2px 0 6px; }
   .xslider { display: flex; gap: 10px; align-items: center; flex: none; padding: 2px 12px 0; font-size: 16px; }
-  .xslider input { flex: 1; height: 22px; }
-  .xslider > span { min-width: 260px; font-weight: 700; }
-  #oQ > span { min-width: 0; }
+  .xslider input[type=range] { flex: 1; height: 22px; }
+  .xslider .xro { min-width: 260px; font-weight: 700; }
   .bigset { font-size: 22px; font-weight: 700; }
 
   /* ---- ③ 함수의 그래프 ---- */
@@ -125,6 +127,9 @@
   .qbtn2:disabled { cursor: default; }
   .pairset { font-size: 19px; font-weight: 700; color: #6b3fd8; word-break: keep-all; }
 
+  /* ---- 수식 (KaTeX) ---- */
+  .katex { font-size: 1.08em; }
+  .formula .katex { font-size: 1.05em; }
   .arrow { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw .6s ease forwards; }
   .arrowHead { opacity: 0; animation: fade .2s ease forwards; }
   @keyframes draw { to { stroke-dashoffset: 0; } }
@@ -332,7 +337,7 @@
     <button class="btn purple" id="iFlip">화살표 거꾸로 보내기 ⇄</button>
     <div class="note">
       <b>역함수가 존재할 조건</b><br>
-      f : X → Y 가 <u>일대일대응</u>일 때만 역함수 f<sup>−1</sup> : Y → X 가 존재합니다.<br><br>
+      f : X → Y 가 <u>일대일대응</u>일 때만 역함수 f⁻¹ : Y → X 가 존재합니다.<br><br>
       ‘일대일대응만 만들기’를 끄고 화살표를 거꾸로 보내 보세요.
     </div>
   </div>
@@ -403,7 +408,7 @@
     <div class="card stage">
       <div class="formula" id="rFormula"></div>
       <div class="svgbox"><svg id="svg5" viewBox="0 0 760 470"></svg></div>
-      <div class="xslider">x 움직이기 <input type="range" id="rX" step="0.05"> <span id="rXv"></span></div>
+      <div class="xslider">x 움직이기 <input type="range" id="rX" step="0.05"> <span class="xro" id="rXv"></span></div>
     </div>
     <div class="card info c4">
       <div class="box"><div class="k">정의역</div><div class="bigset" id="rdD" style="color:var(--x)"></div></div>
@@ -453,7 +458,7 @@
     <div class="card stage">
       <div class="formula" id="gTitle"></div>
       <div class="svgbox"><svg id="svg6" viewBox="0 0 760 470"></svg></div>
-      <div class="xslider" id="gSlider" style="display:none">세로선 x = a <input type="range" id="gAx" min="-4" max="4" step="0.1" value="-3"> <span id="gAxv"></span></div>
+      <div class="xslider" id="gSlider" style="display:none">세로선 x = a <input type="range" id="gAx" min="-4" max="4" step="0.1" value="-3"> <span class="xro" id="gAxv"></span></div>
     </div>
     <div class="card info c3">
       <div class="box" id="gI1"></div>
@@ -499,7 +504,7 @@
       <div class="formula" id="oTitle"></div>
       <div class="svgbox"><svg id="svg7" viewBox="0 0 760 470"></svg></div>
       <div class="xslider" id="oQ" style="justify-content:center;gap:14px"></div>
-      <div class="xslider" id="oSlider" style="display:none">가로선 y = b <input type="range" id="oBy" min="-4" max="4" step="0.1" value="1"> <span id="oByv"></span></div>
+      <div class="xslider" id="oSlider" style="display:none">가로선 y = b <input type="range" id="oBy" min="-4" max="4" step="0.1" value="1"> <span class="xro" id="oByv"></span></div>
     </div>
     <div class="card info c3">
       <div class="box" id="oI1"></div>
@@ -608,7 +613,7 @@ function clearSvg(svg) { svg.innerHTML = ""; el("defs", {}, svg); }
 
 function drawSet(svg, { cx, cy, rx, ry, c, name, sub }) {
   el("ellipse", { cx, cy, rx, ry, fill: c.fill, stroke: c.stroke, "stroke-width": 2 }, svg);
-  text(name, cx, cy - ry - 22, { "font-size": 28, "font-weight": 700, fill: c.stroke }, svg);
+  svgMath(name, cx, cy - ry - 22, { size: 30, color: c.stroke, w: 80, parent: svg });
   if (sub) text(sub, cx, cy + ry + 18, { "font-size": 16, fill: c.stroke, "font-weight": 600 }, svg);
 }
 function column(elems, cx, cy, span, breakAt = -1) {
@@ -639,7 +644,7 @@ function drawNode(svg, p, label, stroke, { w = 2.5, ink = "#1f2430", dash = null
   const g = el("g", { opacity: op }, svg);
   const c = el("circle", { cx: p.x, cy: p.y, r: 18, fill, stroke, "stroke-width": w }, g);
   if (dash) c.setAttribute("stroke-dasharray", dash);
-  text(label, p.x, p.y, { "font-size": 17, "font-weight": 700, fill: ink }, g);
+  svgMath(String(label), p.x, p.y, { size: 17, color: ink, w: 44, parent: g });
   if (onClick) { g.setAttribute("class", "clickable"); g.addEventListener("click", onClick); }
   return g;
 }
@@ -721,7 +726,7 @@ function render1() {
   const yName = idMode ? "X" : "Y";
   drawSet(svg, { cx: cxX, cy, rx: 125, ry: 190, c: SETC.X, name: "X", sub: "정의역" });
   drawSet(svg, { cx: cxY, cy, rx: 125, ry: 190, c: idMode ? SETC.X : SETC.Y, name: yName, sub: idMode ? "공역 (= 정의역)" : "공역" });
-  text("f", 380, 38, { "font-size": 26, "font-style": "italic", "font-family": "serif", fill: "#444" }, svg);
+  svgMath("f", 380, 38, { size: 26, color: "#444", parent: svg });
 
   const rangeSet = new Set(Object.values(f));
   const inR = sortEl(Y.filter(y => rangeSet.has(y))), outR = sortEl(Y.filter(y => !rangeSet.has(y)));
@@ -731,7 +736,7 @@ function render1() {
   if (inR.length) {
     const top = posY[inR[0]].y - 25, bot = posY[inR[inR.length - 1]].y + 25;
     el("rect", { x: cxY - 50, y: top, width: 120, height: bot - top, rx: 25, fill: "#cdeedd", stroke: "#2f9e6e", "stroke-width": 2, "stroke-dasharray": "6 4" }, svg);
-    text("치역 f(X)", cxY + 10, top - 12, { "font-size": 14, fill: "#2f9e6e", "font-weight": 700 }, svg);
+    svgMath("치역 f(X)", cxY + 10, top - 14, { size: 15, color: "#2f9e6e", w: 200, parent: svg });
   }
   X.forEach((x, i) => drawArrow(svg, posX[x], posY[f[x]], COLORS[i % 7], { delay: i * 0.12 }));
   X.forEach((x, i) => drawNode(svg, posX[x], x, COLORS[i % 7]));
@@ -821,8 +826,8 @@ function renderComp(anim) {
   drawSet(A, { cx: 150, cy, rx, ry, c: SETC.X, name: "X" });
   drawSet(A, { cx: 450, cy, rx, ry, c: SETC.Y, name: "Y" });
   drawSet(A, { cx: 750, cy, rx, ry, c: SETC.Z, name: "Z" });
-  text("f", 300, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: SETC.Y.stroke }, A);
-  text("g", 600, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: SETC.Z.stroke }, A);
+  svgMath("f", 300, 30, { size: 28, color: SETC.Y.stroke, parent: A });
+  svgMath("g", 600, 30, { size: 28, color: SETC.Z.stroke, parent: A });
   const pX = column(cX, 150, cy, 260), pY = column(cY, 450, cy, 260), pZ = column(cZ, 750, cy, 260);
 
   cX.forEach((x, i) => drawArrow(A, pX[x], pY[cf[x]], COLORS[i % 7], { anim, delay: i * 0.1, op: dim(x === cSel) }));
@@ -844,7 +849,7 @@ function renderComp(anim) {
   const B = $("svg2b"); clearSvg(B);
   drawSet(B, { cx: 150, cy, rx: 105, ry, c: SETC.X, name: "X" });
   drawSet(B, { cx: 450, cy, rx: 105, ry, c: SETC.Z, name: "Z" });
-  text("g∘f", 300, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: "#2f9e6e" }, B);
+  svgMath("g∘f", 300, 30, { size: 28, color: "#2f9e6e", parent: B });
   const qX = column(cX, 150, cy, 260), qZ = column(cZ, 450, cy, 260);
   const gDone = fDone + cY.length * 0.1 + 0.6;
   cX.forEach((x, i) => drawArrow(B, qX[x], qZ[gf(x)], COLORS[i % 7], { anim, delay: gDone + i * 0.1, op: dim(x === cSel), w: 3 }));
@@ -932,7 +937,7 @@ function renderInv(anim) {
   const A = $("svg3a"); clearSvg(A);
   drawSet(A, { cx: 200, cy, rx, ry, c: SETC.X, name: "X" });
   drawSet(A, { cx: 560, cy, rx, ry, c: SETC.Y, name: "Y" });
-  text("f", 380, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: "#444" }, A);
+  svgMath("f", 380, 30, { size: 28, color: "#444", parent: A });
   const pX = column(iX, 190, cy, 270), pY = column(iY, 570, cy, 270);
   iX.forEach((x, i) => drawArrow(A, pX[x], pY[iF[x]], COLORS[i % 7], { anim, delay: i * 0.1 }));
   iX.forEach((x, i) => drawNode(A, pX[x], x, COLORS[i % 7]));
@@ -953,7 +958,7 @@ function renderInv(anim) {
     $("iTitle").textContent = "대응을 거꾸로 하면?";
   } else {
     $("iTitle").textContent = bij ? "역함수 f⁻¹ : Y → X" : "거꾸로 한 대응 : Y → X  (함수가 아님!)";
-    text(bij ? "f⁻¹" : "?", 380, 30, { "font-size": 28, "font-style": "italic", "font-family": "serif", fill: bij ? "#2f9e6e" : BAD }, B);
+    svgMath(bij ? "f⁻¹" : "?", 380, 30, { size: 28, color: bij ? "#2f9e6e" : BAD, parent: B });
     iX.forEach((x, i) => {
       const y = iF[x], bad = pre[y].length > 1;
       drawArrow(B, qY[y], qX[x], bad ? BAD : COLORS[i % 7], { anim, delay: i * 0.1, w: bad ? 3 : 2.6 });
@@ -988,9 +993,9 @@ function renderInv(anim) {
   } else if (bij) {
     note.className = "box note good";
     note.innerHTML = `<b>f는 일대일대응 → 역함수가 존재합니다.</b><br>` +
-      `y = f(x) ⇔ x = f<sup>−1</sup>(y)<br>` +
-      `예) f(${iX[0]}) = ${iF[iX[0]]} 이므로 f<sup>−1</sup>(${iF[iX[0]]}) = ${iX[0]}<br>` +
-      `(f<sup>−1</sup>∘f)(x) = x,  (f∘f<sup>−1</sup>)(y) = y`;
+      `y = f(x) ⇔ x = f⁻¹(y)<br>` +
+      `예) f(${iX[0]}) = ${iF[iX[0]]} 이므로 f⁻¹(${iF[iX[0]]}) = ${iX[0]}<br>` +
+      `(f⁻¹∘f)(x) = x,  (f∘f⁻¹)(y) = y`;
   } else {
     note.className = "box note bad";
     let h = "<b>Y에서 X로의 함수가 아닙니다.</b><br>";
@@ -1367,8 +1372,8 @@ function render5() {
   }
   el("line", { x1: PX0, y1: ay, x2: PX1, y2: ay, stroke: "#555", "stroke-width": 1.5, "marker-end": markerFor(svg, "#555") }, svg);
   el("line", { x1: ax, y1: PY1, x2: ax, y2: PY0, stroke: "#555", "stroke-width": 1.5, "marker-end": markerFor(svg, "#555") }, svg);
-  text("x", PX1 + 14, ay, { "font-size": 18, "font-style": "italic", "font-family": "serif" }, svg);
-  text("y", ax, PY0 - 12, { "font-size": 18, "font-style": "italic", "font-family": "serif" }, svg);
+  svgMath("x", PX1 + 14, ay, { size: 18, parent: svg });
+  svgMath("y", ax, PY0 - 12, { size: 18, parent: svg });
   text("O", ax - 10, ay + 12, { "font-size": 13, fill: "#555", "font-style": "italic" }, svg);
 
   // 전체 그래프 (흐리게) + 정의역 부분 (진하게)
@@ -1517,8 +1522,8 @@ function drawPlane(svg, box, px) {
   }
   el("line", { x1: px.L, y1: ay, x2: px.R + 8, y2: ay, stroke: "#555", "stroke-width": 1.6, "marker-end": markerFor(svg, "#555") }, svg);
   el("line", { x1: ax, y1: px.B, x2: ax, y2: px.T - 8, stroke: "#555", "stroke-width": 1.6, "marker-end": markerFor(svg, "#555") }, svg);
-  text("x", px.R + 20, ay, { "font-size": 19, "font-style": "italic", "font-family": "serif" }, svg);
-  text("y", ax, px.T - 18, { "font-size": 19, "font-style": "italic", "font-family": "serif" }, svg);
+  svgMath("x", px.R + 20, ay, { size: 19, parent: svg });
+  svgMath("y", ax, px.T - 18, { size: 19, parent: svg });
   text("O", ax - 11, ay + 14, { "font-size": 14, fill: "#555", "font-style": "italic" }, svg);
   return { sx, sy, ax, ay, clip: `url(#${svg.id}-clip)` };
 }
@@ -1738,7 +1743,7 @@ function renderGB() {
   const a = gAx, ys = gYs(it, a), X = sx(a);
   const inf = ys === "inf";
   el("line", { x1: X, y1: 30, x2: X, y2: 460, stroke: inf ? BAD : "#2f9e6e", "stroke-width": inf ? 6 : 3, opacity: inf ? 0.6 : 0.85 }, svg);
-  text(`x = ${nfmt(a)}`, X + 8, 445, { "font-size": 16, fill: "#2f9e6e", "font-weight": 700, "text-anchor": "start" }, svg);
+  svgMath(`x = ${nfmt(a)}`, X + 8, 445, { size: 17, color: "#2f9e6e", anchor: "start", parent: svg });
   if (!inf) ys.forEach(y => el("circle", { cx: X, cy: sy(y), r: 9, fill: ys.length > 1 ? BAD : "#2f9e6e", stroke: "#fff", "stroke-width": 2.5 }, svg));
 
   const n = inf ? "무수히 많음" : `${ys.length}개`;
@@ -1813,7 +1818,7 @@ function renderOA(anim) {
   const cy = 235, cxX = 200, cxY = 560;
   drawSet(svg, { cx: cxX, cy, rx: 120, ry: 185, c: SETC.X, name: "X", sub: "정의역" });
   drawSet(svg, { cx: cxY, cy, rx: 120, ry: 185, c: SETC.Y, name: "Y", sub: "공역" });
-  text("f", 380, 40, { "font-size": 26, "font-style": "italic", "font-family": "serif", fill: "#444" }, svg);
+  svgMath("f", 380, 40, { size: 26, color: "#444", parent: svg });
   const pX = column(oX, cxX - 10, cy, 290), pY = column(oY, cxY + 10, cy, 290);
   oX.forEach((x, i) => {
     const bad = oReveal && T.coll.includes(oF[x]);
@@ -1929,7 +1934,7 @@ function renderOB() {
   const cnt = inf ? Infinity : xs.length;
   const col = cnt === 1 ? "#2f9e6e" : BAD;
   el("line", { x1: 165, y1: Y, x2: 595, y2: Y, stroke: col, "stroke-width": inf ? 6 : 3, opacity: inf ? 0.6 : 0.85 }, svg);
-  text(`y = ${nfmt(b)}`, 640, Y, { "font-size": 16, fill: col, "font-weight": 700 }, svg);
+  svgMath(`y = ${nfmt(b)}`, 605, Y, { size: 17, color: col, anchor: "start", parent: svg });
   if (!inf) xs.forEach(x => el("circle", { cx: sx(x), cy: Y, r: 9, fill: col, stroke: "#fff", "stroke-width": 2.5, "clip-path": P.clip }, svg));
 
   const n = inf ? "무수히 많음" : `${cnt}개`;
@@ -2080,14 +2085,14 @@ function draw8(it, s) {
     if (Array.isArray(c)) {           // 함수 상자
       const active = (i === 1 && s === midAt) || (i === 3 && s >= outAt - (outAt === 3 ? 1 : 0) && s <= outAt);
       el("rect", { x: x0, y: cy - 62, width: w, height: 124, rx: 16, fill: active ? c[2] : "#fff", stroke: c[2], "stroke-width": 3, opacity: 1 }, svg);
-      text(c[0], x0 + w / 2, cy - 22, { "font-size": 40, "font-style": "italic", "font-family": "serif", "font-weight": 700, fill: active ? "#fff" : c[2] }, svg);
-      text(c[1], x0 + w / 2, cy + 30, { "font-size": 17, "font-weight": 700, fill: active ? "#fff" : "#333" }, svg);
+      svgMath(c[0], x0 + w / 2, cy - 22, { size: 40, color: active ? "#fff" : c[2], parent: svg });
+      svgMath(c[1], x0 + w / 2, cy + 30, { size: 19, color: active ? "#fff" : "#333", w: w - 8, parent: svg });
       text(i === 1 ? "① 먼저 (안쪽)" : "② 나중 (바깥쪽)", x0 + w / 2, cy + 86, { "font-size": 16, fill: c[2], "font-weight": 700 }, svg);
     } else {                          // 값 / 식
       const shown = i === 0 || (i === 2 && s >= midAt) || (i === 4 && s >= outAt);
       const final = i === 4 && shown;
       el("rect", { x: x0, y: cy - 30, width: w, height: 60, rx: 30, fill: final ? "#e3f4ec" : "#fff", stroke: final ? "#2f9e6e" : "#999", "stroke-width": final ? 3 : 2 }, svg);
-      text(shown ? c : "?", x0 + w / 2, cy, { "font-size": fsz, "font-weight": 700, fill: shown ? (final ? "#1d7a52" : "#1f2430") : "#bbb" }, svg);
+      svgMath(shown ? c : "?", x0 + w / 2, cy, { size: fsz, color: shown ? (final ? "#1d7a52" : "#1f2430") : "#bbb", w: w - 6, parent: svg });
     }
   });
   text("입력  →  ① 안쪽 함수  →  ② 바깥쪽 함수  →  결과", 480, 34, { "font-size": 17, fill: "#888" }, svg);
@@ -2129,6 +2134,88 @@ function render8() {
 
 // ===================================================================
 syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew(); gNewProblem(); oNewFunc();
+
+// ===================================================================
+// 수식 조판 (LaTeX / KaTeX)
+//  화면에 표시되는 글자 중 수식 부분을 찾아 LaTeX로 바꾼 뒤 KaTeX로 그립니다.
+//  예) "f(x) = x² − 1"  →  f(x) = x^2 - 1
+// ===================================================================
+function toTex(s) {
+  const setBuilder = s.includes("{");
+  let t = s
+    .replace(/,\s{2,}/g, ",\\quad ")
+    .replace(/\{/g, "\\{").replace(/\}/g, "\\}")
+    .replace(/\|/g, setBuilder ? "\\mid " : "|")
+    .replace(/⁻¹/g, "^{-1}").replace(/²/g, "^2").replace(/³/g, "^3")
+    .replace(/₁/g, "_1").replace(/₂/g, "_2")
+    .replace(/¼/g, "\\tfrac{1}{4}").replace(/½/g, "\\tfrac{1}{2}")
+    .replace(/−/g, "-").replace(/×/g, "\\times ").replace(/÷/g, "\\div ")
+    .replace(/∘/g, "\\circ ").replace(/≤/g, "\\le ").replace(/≥/g, "\\ge ").replace(/≠/g, "\\ne ")
+    .replace(/∉/g, "\\notin ").replace(/∈/g, "\\in ").replace(/⊂/g, "\\subset ")
+    .replace(/⇔/g, "\\Leftrightarrow ").replace(/→/g, "\\to ").replace(/∞/g, "\\infty ")
+    .replace(/\s:\s/g, "\\colon ");
+  return t;
+}
+// 수식으로 볼 글자들 (한글·특수 기호가 나오면 끊김)
+const MATH_RUN = /[A-Za-z0-9()+\-−=×÷/.,²³⁻¹₁₂∘≤≥≠<>∈∉{}|⊂⇔→∞¼½:?'\s]+/g;
+function isMath(core) {
+  if (!/[A-Za-z0-9]/.test(core)) return false;          // 문자나 숫자가 있어야 수식
+  if (/^Q\d\.?$/.test(core)) return false;               // Q1, Q2 같은 번호는 제외
+  return true;
+}
+const SKIP = "script,style,nav,select,option,textarea,input,.katex,.nomath";
+function mathify(root) {
+  if (!window.katex) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode, p = n.parentElement;
+    if (!p || p.namespaceURI !== "http://www.w3.org/1999/xhtml") continue;   // SVG 글자는 그대로
+    if (p.closest(SKIP)) continue;
+    if (!/[A-Za-z0-9]/.test(n.nodeValue)) continue;
+    nodes.push(n);
+  }
+  nodes.forEach(n => {
+    const s = n.nodeValue;
+    const frag = document.createDocumentFragment();
+    let last = 0, changed = false;
+    s.replace(MATH_RUN, (m, off) => {
+      // 앞뒤 공백·문장부호는 수식 밖으로
+      // 짝이 맞지 않는 괄호(예: "x = 2 (미포함)"의 "(")도 수식 밖으로
+      const lead = m.match(/^[\s.,:)]*/)[0], trail = m.slice(lead.length).match(/[\s.,(]*$/)[0];
+      const core = m.slice(lead.length, m.length - trail.length);
+      if (!core || !isMath(core)) return m;
+      frag.appendChild(document.createTextNode(s.slice(last, off) + lead));
+      const span = document.createElement("span");
+      try { katex.render(toTex(core), span, { throwOnError: false }); } catch (e) { span.textContent = core; }
+      frag.appendChild(span);
+      frag.appendChild(document.createTextNode(trail));
+      last = off + m.length; changed = true;
+      return m;
+    });
+    if (!changed) return;
+    frag.appendChild(document.createTextNode(s.slice(last)));
+    n.parentNode.replaceChild(frag, n);
+  });
+}
+// SVG 안의 수식: foreignObject 안에 HTML로 넣으면 위의 mathify가 조판
+function svgMath(str, x, y, { size = 18, color = "#1f2430", anchor = "middle", w = 420, parent } = {}) {
+  const h = size * 2.4;
+  const fx = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x;
+  const fo = el("foreignObject", { x: fx, y: y - h / 2, width: w, height: h, "pointer-events": "none" }, parent);
+  const d = document.createElement("div");
+  d.style.cssText = `pointer-events:none;width:100%;height:100%;display:flex;align-items:center;justify-content:${anchor === "middle" ? "center" : anchor === "end" ? "flex-end" : "flex-start"};font-size:${size}px;color:${color};white-space:nowrap`;
+  d.textContent = str;
+  fo.appendChild(d);
+  return fo;
+}
+// 화면이 바뀔 때마다 새 글자를 조판
+let mathTimer = null;
+function scheduleMath() { if (mathTimer) return; mathTimer = setTimeout(() => { mathTimer = null; mathify(document.body); }, 0); }
+document.addEventListener("DOMContentLoaded", () => {
+  mathify(document.body);
+  new MutationObserver(scheduleMath).observe(document.body, { childList: true, subtree: true, characterData: true });
+});
 </script>
 </body>
 </html>
