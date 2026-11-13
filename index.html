@@ -352,10 +352,10 @@
       <button class="btn orange" id="cReF">f 재설정 ↻</button>
       <button class="btn purple" id="cReG">g 재설정 ↻</button>
     </div>
-    <button class="btn ghost" id="cClear">따라가기 해제</button>
+    <button class="btn ghost" id="cClear" disabled title="X의 원소를 클릭하면 켜집니다">경로 강조 해제</button>
     <div class="note">
       <b>사용법</b><br>
-      X의 원소(동그라미)를 <u>클릭</u>하면 x → f(x) → g(f(x)) 경로와 계산 과정이 나옵니다.<br><br>
+      X의 원소(동그라미)를 <u>클릭</u>하면 x → f(x) → g(f(x)) 경로와 계산 과정이 나옵니다.<br>강조를 끄려면 같은 원소를 다시 클릭하거나 <b>경로 강조 해제</b>를 누르세요.<br><br>
       <b>(g∘f)(x) = g(f(x))</b><br>
       f를 <u>먼저</u>, g를 <u>나중에</u> 적용합니다.
     </div>
@@ -1002,6 +1002,9 @@ function renderComp(anim) {
       : `<span style="font-size:13px">X의 원소를 클릭하면 계산 과정이 나옵니다.</span>`;
   }
   $("cNote").innerHTML = note;
+  // 원소를 골랐을 때만 '경로 강조 해제' 버튼 활성화
+  $("cClear").disabled = cSel === null;
+  $("cClear").title = cSel === null ? "X의 원소를 클릭하면 켜집니다" : `x = ${cSel} 경로 강조 끄기`;
 }
 
 $("cX").addEventListener("input", newComp);
