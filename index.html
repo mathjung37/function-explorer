@@ -137,6 +137,39 @@
   .clickable { cursor: pointer; }
   .clickable:hover circle { filter: drop-shadow(0 0 4px rgba(0,0,0,.35)); }
 
+  /* ---- ⑤-❷ 교과서 문제 풀기 ---- */
+  #tbRight { position: relative; }
+  .tbStage { gap: 6px; padding: 12px 16px; }
+  .tbHead { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: none; }
+  .tbTag { background: #eef1f7; color: var(--muted); font-weight: 700; font-size: 14px; padding: 5px 12px; border-radius: 999px; }
+  .tbQ { font-size: 30px; }
+  .tbGiven { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .fchip { --c: #888; border: 2px solid var(--c); color: var(--c); background: #fff; border-radius: 999px; padding: 4px 14px; font-size: 18px; font-weight: 600; }
+  .tbStruct { flex: none; text-align: center; font-size: 29px; min-height: 100px; display: flex; align-items: center; justify-content: center; }
+  .tbCards { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .tbCard { --c: #888; position: relative; border: 2px solid #e3e6ee; border-radius: 14px; padding: 10px 12px 12px; background: #fff; cursor: pointer; transition: box-shadow .2s, border-color .2s, opacity .2s; min-height: 104px; }
+  .tbCard .lab { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; color: var(--c); }
+  .tbCard .num { width: 22px; height: 22px; border-radius: 50%; background: var(--c); color: #fff; display: inline-grid; place-items: center; font-size: 13px; flex: none; }
+  .tbCard .body { margin-top: 6px; font-size: 18px; line-height: 1.55; word-break: keep-all; }
+  .tbCard.done { border-color: color-mix(in srgb, var(--c) 45%, #fff); }
+  .tbCard.cur { border-color: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent), 0 6px 18px rgba(0,0,0,.08); }
+  .tbCard.locked { border-style: dashed; opacity: .55; background: #fafbfc; }
+  .tbCard.locked .body { color: #aab; font-size: 15px; }
+  .tbCard.final.done { background: #effaf4; }
+  .tbTip { flex: none; font-size: 15px; color: #555; background: #fff8e6; border-radius: 10px; padding: 8px 12px; line-height: 1.5; }
+  .tbBar { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: relative; z-index: 4; }
+  .tbBar .qbtn { margin: 0; }
+  .tbBar .sep { width: 1px; height: 28px; background: var(--line); margin: 0 4px; }
+  .tbBar .inkTools { margin-left: auto; display: flex; gap: 6px; align-items: center; background: #fff; border-radius: 12px; padding: 2px; }
+  .inkBtn { border: 2px solid var(--line); background: #fff; border-radius: 10px; height: 38px; min-width: 38px; padding: 0 10px; font-size: 15px; font-family: inherit; font-weight: 700; cursor: pointer; }
+  .inkBtn.on { border-color: var(--x); background: #e9f0fd; }
+  .inkDot { width: 30px; height: 30px; min-width: 30px; padding: 0; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); cursor: pointer; }
+  .inkDot.on { box-shadow: 0 0 0 3px var(--x); }
+  #tbInk { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; touch-action: none; border-radius: 14px; }
+  #tbRight.inking #tbInk { pointer-events: auto; cursor: crosshair; }
+  #tbRight.inking .tbStage { outline: 3px dashed #9bb7ee; outline-offset: -3px; }
+  @keyframes pulseBox { 0%, 100% { stroke-width: 3; } 50% { stroke-width: 6; } }
+  .boxPulse { animation: pulseBox 1.4s ease-in-out infinite; }
   /* ---- 설정 칸 접기 ---- */
   #leftToggle { flex: none; width: 42px; height: 42px; border-radius: 10px; border: 2px solid var(--line); background: #fff; font-size: 20px; cursor: pointer; align-self: center; }
   #leftToggle:hover { background: #eef0f5; }
@@ -201,6 +234,19 @@
     .info.c4, .info.c2, .info.c3 { grid-template-columns: 1fr 1fr; }
     .xslider { flex-wrap: wrap; }
   }
+  @media (min-width: 1001px) and (max-width: 1400px), (min-width: 1001px) and (max-height: 900px) {
+    .tbStage { padding: 8px 10px; }
+    .tbQ { font-size: 23px; }
+    .tbStruct { font-size: 19px; min-height: 72px; }
+    .tbCard { min-height: 84px; padding: 7px 9px 9px; }
+    .tbCard .body { font-size: 14.5px; }
+    .tbCard .lab { font-size: 12.5px; }
+    .fchip { font-size: 14px; padding: 3px 10px; }
+    .tbTip { font-size: 13px; padding: 5px 10px; }
+    .inkBtn { height: 34px; min-width: 34px; font-size: 13px; padding: 0 8px; }
+    .inkDot { width: 26px; height: 26px; min-width: 26px; }
+  }
+  @media (max-width: 1000px) { .tbCards { grid-template-columns: 1fr 1fr; } .tbGiven { margin-left: 0; } }
 </style>
 </head>
 <body>
@@ -363,17 +409,20 @@
     </div>
   </div>
 
-  <div class="right">
-    <div class="card stage">
-      <div class="formula" id="tbTitle"></div>
-      <div style="text-align:center;font-size:20px;color:var(--muted);flex:none" id="tbGiven"></div>
-      <div class="svgbox"><svg id="svg8" viewBox="0 0 960 300"></svg></div>
-      <div class="xslider" style="justify-content:center;gap:12px" id="tbCtrl"></div>
+  <div class="right" id="tbRight">
+    <div class="card stage tbStage">
+      <div class="tbHead">
+        <span class="tbTag" id="tbTag"></span>
+        <span class="tbQ nomath" id="tbQ"></span>
+        <span class="tbGiven" id="tbGiven"></span>
+      </div>
+      <div class="tbStruct nomath" id="tbStruct"></div>
+      <div class="svgbox"><svg id="svg8" viewBox="0 0 960 210"></svg></div>
+      <div class="tbCards" id="tbCards"></div>
+      <div class="tbTip" id="tbNote"></div>
+      <div class="tbBar" id="tbCtrl"></div>
     </div>
-    <div class="card info c2" style="grid-template-columns:1.6fr 1fr">
-      <div class="box" id="tbSteps" style="font-size:19px;line-height:1.75"></div>
-      <div class="box note" id="tbNote"></div>
-    </div>
+    <canvas id="tbInk" aria-label="필기 영역"></canvas>
   </div>
 </section>
 
@@ -2115,46 +2164,76 @@ const TB = [
 ];
 let tbI = 0, tbS = 0, tbMsg = "";
 
-function tbSelect(i) { tbI = i; tbS = 0; tbMsg = ""; render8(); }
+function tbSelect(i) { tbI = i; tbS = 0; tbMsg = ""; render8(); inkRedraw(); }
 function tbCheck() {
   const it = TB[tbI], v = ($("tbIn").value || "").replace(/\s/g, "").replace(/−/g, "-");
   if (v === it.ans) { tbS = it.steps.length - 1; tbMsg = `<span class="ok"><b>✔ 정답!</b></span>`; }
-  else tbMsg = `<span class="ng"><b>✘ 다시 생각해 보세요.</b> 힌트: 안쪽 함수부터 계산!</span>`;
+  else tbMsg = `<span class="ng"><b>✘ 다시 생각해 보세요.</b> 힌트: 안쪽 함수부터!</span>`;
   render8();
 }
+// LaTeX를 바로 그리기
+function texInto(elm, latex, display = false) {
+  if (window.katex) katex.render(latex, elm, { throwOnError: false, strict: "ignore", displayMode: display });
+  else elm.textContent = latex;
+}
+const texOf = s => toTex(String(s));
+// 문제 목록에서 현재 문제의 이름 (예: "문제 1 (2)")
+function tbTagOf(i) {
+  let g = "";
+  for (let k = i; k >= 0; k--) if (TB[k].group) { g = TB[k].group.split(/\s{2,}/)[0].replace(/\s*\(\d+쪽.*?\)/, ""); break; }
+  const m = TB[i].label.match(/^\((\d)\)/);
+  return m ? `${g} (${m[1]})` : g;
+}
 
+// 함수 기계 그림
 function draw8(it, s) {
   const svg = $("svg8"); clearSvg(svg);
-  const midAt = 1, outAt = it.outAt;
-  const fsz = 22;
-  // 너비 계산
-  const W = it.chain.map(c => Array.isArray(c) ? Math.max(150, c[1].length * 12 + 34) : Math.max(70, c.length * 13 + 30));
-  const gap = 38, total = W.reduce((a, b) => a + b, 0) + gap * 4;
-  let x = (960 - total) / 2;
-  const cy = 150, pos = [];
-  W.forEach(w => { pos.push([x, w]); x += w + gap; });
-  // 화살표
+  const defs = svg.querySelector("defs");
+  const flt = el("filter", { id: "tbShadow", x: "-20%", y: "-20%", width: "140%", height: "160%" }, defs);
+  el("feDropShadow", { dx: 0, dy: 4, stdDeviation: 5, "flood-color": "#000", "flood-opacity": 0.13 }, flt);
+  const midAt = 1, outAt = it.outAt, cy = 92;
+  const W = it.chain.map(c => Array.isArray(c) ? Math.max(170, c[1].length * 12 + 40) : Math.max(76, c.length * 13 + 34));
+  const gap = 46, total = W.reduce((a, b) => a + b, 0) + gap * 4;
+  const VW = Math.max(960, total + 30);            // 식이 길면 그림 폭을 넓혀서 잘리지 않게
+  svg.setAttribute("viewBox", `0 0 ${VW} 210`);
+  let x = (VW - total) / 2;
+  const pos = W.map(w => { const p = [x, w]; x += w + gap; return p; });
+  const inC = it.chain[1][2], outC = it.chain[3][2];
+
+  // 화살표 (값이 지나간 구간만 진하게)
   for (let i = 0; i < 4; i++) {
-    const x1 = pos[i][0] + pos[i][1] + 3, x2 = pos[i + 1][0] - 4;
+    const x1 = pos[i][0] + pos[i][1] + 4, x2 = pos[i + 1][0] - 6;
     const lit = (i < 2 && s >= midAt) || (i >= 2 && s >= outAt);
-    el("line", { x1, y1: cy, x2, y2: cy, stroke: lit ? "#444" : "#ccc", "stroke-width": 3, "marker-end": markerFor(svg, lit ? "#444" : "#ccc") }, svg);
+    const col = lit ? (i < 2 ? inC : outC) : "#d5d9e2";
+    el("line", { x1, y1: cy, x2, y2: cy, stroke: col, "stroke-width": lit ? 4 : 3, "stroke-linecap": "round", "marker-end": markerFor(svg, col) }, svg);
   }
   it.chain.forEach((c, i) => {
     const [x0, w] = pos[i];
-    if (Array.isArray(c)) {           // 함수 상자
-      const active = (i === 1 && s === midAt) || (i === 3 && s >= outAt - (outAt === 3 ? 1 : 0) && s <= outAt);
-      el("rect", { x: x0, y: cy - 62, width: w, height: 124, rx: 16, fill: active ? c[2] : "#fff", stroke: c[2], "stroke-width": 3, opacity: 1 }, svg);
-      svgMath(c[0], x0 + w / 2, cy - 22, { size: 40, color: active ? "#fff" : c[2], parent: svg });
-      svgMath(c[1], x0 + w / 2, cy + 30, { size: 19, color: active ? "#fff" : "#333", w: w - 8, parent: svg });
-      text(i === 1 ? "① 먼저 (안쪽)" : "② 나중 (바깥쪽)", x0 + w / 2, cy + 86, { "font-size": 16, fill: c[2], "font-weight": 700 }, svg);
-    } else {                          // 값 / 식
+    if (Array.isArray(c)) {
+      const isIn = i === 1;
+      const active = isIn ? s === midAt : (s >= outAt - (outAt === 3 ? 1 : 0) && s <= outAt);
+      const done = isIn ? s > midAt : s > outAt;
+      const g = el("g", {}, svg);
+      const r = el("rect", { x: x0, y: cy - 58, width: w, height: 116, rx: 20, fill: active ? c[2] : "#fff", stroke: c[2], "stroke-width": 3, filter: active ? "url(#tbShadow)" : "" }, g);
+      if (active) r.setAttribute("class", "boxPulse");
+      if (!active) el("rect", { x: x0, y: cy - 58, width: w, height: 40, rx: 20, fill: c[2], opacity: done ? 0.16 : 0.1 }, g);
+      svgMath(c[0], x0 + w / 2, cy - 30, { size: 34, color: active ? "#fff" : c[2], parent: g });
+      svgMath(c[1], x0 + w / 2, cy + 24, { size: 19, color: active ? "#fff" : "#333", parent: g });
+      // 아래 이름표
+      const lab = isIn ? "① 안쪽 · 먼저" : "② 바깥쪽 · 나중";
+      el("rect", { x: x0 + w / 2 - 62, y: cy + 70, width: 124, height: 28, rx: 14, fill: c[2], opacity: active ? 1 : 0.14 }, svg);
+      text(lab, x0 + w / 2, cy + 84, { "font-size": 14, "font-weight": 700, fill: active ? "#fff" : c[2] }, svg);
+    } else {
       const shown = i === 0 || (i === 2 && s >= midAt) || (i === 4 && s >= outAt);
       const final = i === 4 && shown;
-      el("rect", { x: x0, y: cy - 30, width: w, height: 60, rx: 30, fill: final ? "#e3f4ec" : "#fff", stroke: final ? "#2f9e6e" : "#999", "stroke-width": final ? 3 : 2 }, svg);
-      svgMath(shown ? c : "?", x0 + w / 2, cy, { size: fsz, color: shown ? (final ? "#1d7a52" : "#1f2430") : "#bbb", w: w - 6, parent: svg });
+      el("rect", { x: x0, y: cy - 30, width: w, height: 60, rx: 30, fill: final ? "#2f9e6e" : shown ? "#fff" : "#f4f5f8",
+        stroke: final ? "#2f9e6e" : shown ? "#9aa3b5" : "#d5d9e2", "stroke-width": 2.5, "stroke-dasharray": shown ? "" : "6 5", filter: final ? "url(#tbShadow)" : "" }, svg);
+      if (shown) svgMath(c, x0 + w / 2, cy, { size: 22, color: final ? "#fff" : "#1f2430", parent: svg });
+      else text("?", x0 + w / 2, cy, { "font-size": 24, "font-weight": 700, fill: "#b8bfcc" }, svg);
+      const cap = i === 0 ? "입력" : i === 2 ? "중간값" : "결과";
+      text(cap, x0 + w / 2, cy + 50, { "font-size": 13, fill: "#98a0b0", "font-weight": 600 }, svg);
     }
   });
-  text("입력  →  ① 안쪽 함수  →  ② 바깥쪽 함수  →  결과", 480, 34, { "font-size": 17, fill: "#888" }, svg);
 }
 
 function render8() {
@@ -2168,28 +2247,131 @@ function render8() {
   $("tbList").querySelectorAll("button").forEach(b => b.addEventListener("click", () => tbSelect(+b.dataset.i)));
 
   const it = TB[tbI];
-  $("tbTitle").innerHTML = `${it.q} = ?`;
-  $("tbGiven").textContent = it.given;
+  const outer = it.chain[3][0], inner = it.chain[1][0], arg = it.chain[0];
+  const inC = it.chain[1][2], outC = it.chain[3][2];
+
+  // 머리줄: 문제 이름, 구하는 값, 주어진 함수
+  $("tbTag").textContent = tbTagOf(tbI);
+  texInto($("tbQ"), `${texOf(it.q)} = \\,?`);
+  const fns = it.given.split(/,\s+/);
+  $("tbGiven").innerHTML = fns.map(f => `<span class="fchip" style="--c:${f.trim().startsWith("f") ? OR : PU}">${f.trim()}</span>`).join("");
+
+  // 구조 한눈에: (g∘f)(a) = g( f(a) )  — 밑괄호 ① 먼저, 위괄호 ② 나중
+  const a = texOf(arg);
+  texInto($("tbStruct"),
+    `${texOf(it.q)} \\;=\\; \\overbrace{\\textcolor{${outC}}{${outer}}\\Big(\\underbrace{\\textcolor{${inC}}{${inner}(${a})}}_{\\textcolor{${inC}}{\\text{① 먼저 계산}}}\\Big)}^{\\textcolor{${outC}}{\\text{② 그 결과를 ${outer}에 대입}}}`, true);
+
   draw8(it, tbS);
 
-  // 단계 풀이
-  $("tbSteps").innerHTML = `<div class="k">단계별 풀이 (${tbS + 1} / ${it.steps.length})</div>` +
-    it.steps.map((t, k) => k <= tbS ? `<div>${t}</div>` : `<div style="color:#ccc">· · ·</div>`).join("");
-  $("tbNote").innerHTML = `<b>💡 포인트</b><br>${it.note}`;
+  // 단계 카드 4장
+  const meta = [
+    { lab: "식 세우기", c: "#6b7280" },
+    { lab: `안쪽 ${inner} 먼저`, c: inC },
+    { lab: `바깥쪽 ${outer}에 대입`, c: outC },
+    { lab: "답", c: "#2f9e6e" },
+  ];
+  const clean = t => t.replace(/^[①②]\s*/, "").replace(/^따라서\s*/, "");
+  $("tbCards").innerHTML = it.steps.map((t, k) => {
+    const st = k < tbS ? "done" : k === tbS ? "cur done" : "locked";
+    return `<div class="tbCard ${st} ${k === 3 ? "final" : ""}" data-k="${k}" style="--c:${meta[k].c}">
+      <div class="lab"><span class="num">${k === 3 ? "✓" : k + 1}</span>${meta[k].lab}</div>
+      <div class="body">${k <= tbS ? clean(t) : "눌러서 확인"}</div></div>`;
+  }).join("");
+  $("tbCards").querySelectorAll(".tbCard").forEach(c => c.addEventListener("click", () => { tbS = +c.dataset.k; render8(); }));
+  $("tbNote").innerHTML = `💡 ${it.note}`;
 
-  // 조작 버튼
+  // 조작 막대: 단계 이동 · 답 입력 · 필기 도구
   const last = tbS >= it.steps.length - 1;
   let c = `<button class="btn ghost qbtn" id="tbPrev" ${tbS === 0 ? "disabled" : ""}>◀ 이전</button>` +
     `<button class="btn primary qbtn" id="tbNext" ${last ? "disabled" : ""}>다음 단계 ▶</button>` +
-    `<button class="btn ghost qbtn" id="tbAll" ${last ? "disabled" : ""}>전체 풀이 보기</button>`;
-  if (it.ans !== undefined) c += `<span style="margin-left:18px">답 입력</span><input id="tbIn" type="text" inputmode="numeric" style="width:80px;font-size:18px;padding:6px;border-radius:8px;border:1px solid var(--line);text-align:center"><button class="btn secondary qbtn" id="tbChk">확인</button>`;
+    `<button class="btn ghost qbtn" id="tbAll" ${last ? "disabled" : ""}>전체 풀이</button>`;
+  if (it.ans !== undefined) c += `<span class="sep"></span><span>답</span><input id="tbIn" type="text" inputmode="numeric" style="width:80px;font-size:18px;padding:6px;border-radius:8px;border:1px solid var(--line);text-align:center"><button class="btn secondary qbtn" id="tbChk">확인</button>`;
   c += `<span>${tbMsg}</span>`;
+  c += `<span class="inkTools">` + inkToolsHtml() + `</span>`;
   $("tbCtrl").innerHTML = c;
   $("tbPrev").onclick = () => { tbS = Math.max(0, tbS - 1); render8(); };
   $("tbNext").onclick = () => { tbS = Math.min(it.steps.length - 1, tbS + 1); render8(); };
   $("tbAll").onclick = () => { tbS = it.steps.length - 1; render8(); };
   if ($("tbChk")) { $("tbChk").onclick = tbCheck; $("tbIn").onkeydown = e => { if (e.key === "Enter") tbCheck(); }; }
+  bindInkTools();
 }
+
+// ===================================================================
+// 필기 (펜으로 화면 위에 계산하기) — Apple Pencil 필압 반영, 펜 사용 중 손바닥 무시
+// ===================================================================
+const INK_COLORS = [["#1f2430", "검정"], ["#d63b3b", "빨강"], ["#3b6fd8", "파랑"]];
+const ink = { on: false, tool: "pen", color: INK_COLORS[0][0], strokes: {}, cur: null, penSeen: false };
+const inkList = () => (ink.strokes[tbI] = ink.strokes[tbI] || []);
+
+function inkToolsHtml() {
+  let h = `<button class="inkBtn ${ink.on ? "on" : ""}" id="inkToggle">✏️ 필기 ${ink.on ? "끄기" : "켜기"}</button>`;
+  if (ink.on) {
+    h += INK_COLORS.map(([c, n]) => `<button class="inkDot ${ink.tool === "pen" && ink.color === c ? "on" : ""}" data-c="${c}" title="${n} 펜" style="background:${c}"></button>`).join("");
+    h += `<button class="inkBtn ${ink.tool === "eraser" ? "on" : ""}" id="inkEraser" title="지우개">지우개</button>`;
+    h += `<button class="inkBtn" id="inkUndo" title="한 획 되돌리기">↶</button>`;
+    h += `<button class="inkBtn" id="inkClear" title="전체 지우기">전체 지우기</button>`;
+  }
+  return h;
+}
+function bindInkTools() {
+  $("inkToggle").onclick = () => { ink.on = !ink.on; $("tbRight").classList.toggle("inking", ink.on); render8(); };
+  if (!ink.on) return;
+  document.querySelectorAll(".inkDot").forEach(b => b.onclick = () => { ink.tool = "pen"; ink.color = b.dataset.c; render8(); });
+  $("inkEraser").onclick = () => { ink.tool = "eraser"; render8(); };
+  $("inkUndo").onclick = () => { inkList().pop(); inkRedraw(); };
+  $("inkClear").onclick = () => { ink.strokes[tbI] = []; inkRedraw(); };
+}
+function inkCanvas() {
+  const cv = $("tbInk"), box = $("tbRight").getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const w = Math.round(box.width * dpr), h = Math.round(box.height * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  return { cv, ctx: cv.getContext("2d"), W: box.width, H: box.height, dpr };
+}
+function inkStroke(ctx, st, W, H, dpr, from = 1) {
+  ctx.save();
+  ctx.scale(dpr, dpr);
+  ctx.globalCompositeOperation = st.er ? "destination-out" : "source-over";
+  ctx.strokeStyle = st.c; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  const p = st.p;
+  if (p.length === 1) { ctx.fillStyle = st.c; ctx.beginPath(); ctx.arc(p[0][0] * W, p[0][1] * H, st.w / 2, 0, 7); ctx.fill(); }
+  for (let i = Math.max(1, from); i < p.length; i++) {
+    ctx.lineWidth = st.er ? st.w : st.w * (0.55 + p[i][2]);
+    ctx.beginPath(); ctx.moveTo(p[i - 1][0] * W, p[i - 1][1] * H); ctx.lineTo(p[i][0] * W, p[i][1] * H); ctx.stroke();
+  }
+  ctx.restore();
+}
+function inkRedraw() {
+  const { cv, ctx, W, H, dpr } = inkCanvas();
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  inkList().forEach(st => inkStroke(ctx, st, W, H, dpr));
+}
+(function setupInk() {
+  const cv = $("tbInk");
+  const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, e.pressure && e.pointerType === "pen" ? e.pressure : 0.5]; };
+  cv.addEventListener("pointerdown", e => {
+    if (!ink.on) return;
+    if (e.pointerType === "pen") ink.penSeen = true;
+    if (e.pointerType === "touch" && ink.penSeen) return;      // 펜을 쓰는 중이면 손바닥 터치는 무시
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    ink.cur = { c: ink.color, w: ink.tool === "eraser" ? 28 : 3.2, er: ink.tool === "eraser", p: [pt(e)], id: e.pointerId };
+    inkList().push(ink.cur);
+    const { ctx, W, H, dpr } = inkCanvas(); inkStroke(ctx, ink.cur, W, H, dpr);
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!ink.cur || e.pointerId !== ink.cur.id) return;
+    e.preventDefault();
+    let evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    if (!evs.length) evs = [e];
+    const n0 = ink.cur.p.length;
+    evs.forEach(ev => ink.cur.p.push(pt(ev)));
+    const { ctx, W, H, dpr } = inkCanvas(); inkStroke(ctx, ink.cur, W, H, dpr, n0);
+  });
+  const end = e => { if (ink.cur && e.pointerId === ink.cur.id) ink.cur = null; };
+  cv.addEventListener("pointerup", end);
+  cv.addEventListener("pointercancel", end);
+  if (window.ResizeObserver) new ResizeObserver(() => inkRedraw()).observe($("tbRight"));
+})();
 
 // ===================================================================
 syncLimits(); newSets(); newComp(); newInv(); newProblem(); rNew(); gNewProblem(); oNewFunc();
